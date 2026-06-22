@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mapa Mental Final | Processador Desmistificado</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/components.css">
+  <style>
+    .mapa-header { position: relative; padding: 6rem 0 3rem; overflow: hidden; }
+    .mapa-header::before { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(99,102,241,0.2), rgba(139,92,246,0.1)); }
+    .mapa-header::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, rgba(99,102,241,0.6), transparent); }
+    .mapa-header-content { position: relative; z-index: 1; text-align: center; }
+    .mapa-title { font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 800; margin-bottom: 1rem; background: linear-gradient(135deg, #6366f1, #a78bfa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .mapa-desc { font-size: 1.1rem; color: var(--text-secondary); max-width: 700px; margin: 0 auto; }
+    .mapa-nav { position: fixed; top: 0; left: 0; right: 0; z-index: 1000; padding: 0.75rem 1.5rem; display: flex; justify-content: space-between; align-items: center; background: var(--glass); backdrop-filter: blur(20px); border-bottom: 1px solid var(--glass-border); }
+    .mapa-nav-back { display: flex; align-items: center; gap: 0.5rem; color: var(--text-secondary); font-size: 0.9rem; text-decoration: none; transition: var(--transition); }
+    .mapa-nav-back:hover { color: var(--text-primary); }
+    .mapa-nav-btn { padding: 0.4rem 0.8rem; border-radius: var(--radius-sm); background: var(--bg-elevated); border: 1px solid var(--glass-border); color: var(--text-secondary); cursor: pointer; transition: var(--transition); font-size: 0.85rem; }
+    .mapa-nav-btn:hover { background: var(--primary); color: white; border-color: var(--primary); }
+    .mapa-content { padding: 3rem 0; }
+    .mindmap-container { display: flex; justify-content: center; padding: 2rem 0; }
+    .mindmap { position: relative; max-width: 900px; width: 100%; }
+    .mindmap-center { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; padding: 1.5rem 2rem; border-radius: var(--radius-lg); text-align: center; font-weight: 700; font-size: 1.3rem; margin: 0 auto; max-width: 200px; box-shadow: 0 8px 32px rgba(99,102,241,0.4); position: relative; z-index: 2; }
+    .mindmap-branches { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-top: 2rem; }
+    .mindmap-branch { background: var(--bg-card); border-radius: var(--radius-lg); padding: 1.25rem; border: 1px solid var(--glass-border); transition: var(--transition); }
+    .mindmap-branch:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); border-color: rgba(99,102,241,0.2); }
+    .mindmap-branch-title { font-weight: 700; font-size: 1.1rem; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem; }
+    .mindmap-branch-items { list-style: none; margin: 0; padding: 0; }
+    .mindmap-branch-items li { padding: 0.4rem 0; color: var(--text-secondary); font-size: 0.9rem; border-bottom: 1px solid var(--glass-border); }
+    .mindmap-branch-items li:last-child { border-bottom: none; }
+    .mindmap-branch-items li a { color: var(--text-secondary); text-decoration: none; transition: var(--transition); }
+    .mindmap-branch-items li a:hover { color: var(--primary-light); }
+    .conexoes-section { padding: 3rem 0; background: var(--bg-card); border-top: 1px solid var(--glass-border); }
+    .conexoes-section h2 { text-align: center; margin-bottom: 2rem; }
+    .conexoes-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; }
+    .conexao-card { background: var(--bg-main); border-radius: var(--radius-lg); padding: 1.5rem; border: 1px solid var(--glass-border); }
+    .conexao-card h3 { font-size: 1.1rem; margin-bottom: 0.75rem; color: var(--primary-light); }
+    .conexao-card p { font-size: 0.9rem; color: var(--text-secondary); line-height: 1.7; }
+    .footer { padding: 3rem 0; border-top: 1px solid var(--glass-border); text-align: center; }
+    .footer p { color: var(--text-muted); font-size: 0.9rem; }
+  </style>
+</head>
+<body>
+  <nav class="mapa-nav">
+    <a href="index.html" class="mapa-nav-back"><span>←</span><span>Voltar ao Início</span></a>
+    <div>
+      <button class="mapa-nav-btn" onclick="PainelPersonalizacao.abrir()">⚙️ Personalizar</button>
+    </div>
+  </nav>
+  <header class="mapa-header">
+    <div class="container mapa-header-content">
+      <div class="mapa-title">🗺️ Mapa Mental Final</div>
+      <p class="mapa-desc">Conectando todos os conceitos do processador com programação, Linux, sistemas operacionais e cibersegurança.</p>
+    </div>
+  </header>
+  <main class="mapa-content">
+    <div class="container">
+      <div class="mindmap-container">
+        <div class="mindmap">
+          <div class="mindmap-center">🧠 CPU</div>
+          <div class="mindmap-branches">
+            <div class="mindmap-branch">
+              <div class="mindmap-branch-title">📦 <a href="capitulos/cap4.html" style="color:inherit">Registradores</a></div>
+              <ul class="mindmap-branch-items">
+                <li><a href="capitulos/cap4.html">RAX, RBX, RCX, RDX (gerais)</a></li>
+                <li><a href="capitulos/cap4.html">RIP (Instruction Pointer)</a></li>
+                <li><a href="capitulos/cap4.html">RSP, RBP (Stack)</a></li>
+                <li><a href="capitulos/cap4.html">RFLAGS (status)</a></li>
+                <li><a href="capitulos/cap4.html">64 bits cada (x86_64)</a></li>
+              </ul>
+            </div>
+            <div class="mindmap-branch">
+              <div class="mindmap-branch-title">💨 <a href="capitulos/cap6.html" style="color:inherit">Cache</a></div>
+              <ul class="mindmap-branch-items">
+                <li><a href="capitulos/cap6.html">L1: 32-64 KB, ~4 ciclos</a></li>
+                <li><a href="capitulos/cap6.html">L2: 256 KB-1 MB, ~10 ciclos</a></li>
+                <li><a href="capitulos/cap6.html">L3: 8-64 MB, ~30-40 ciclos</a></li>
+                <li><a href="capitulos/cap6.html">Cache Hit vs Miss</a></li>
+                <li><a href="capitulos/cap6.html">Localidade temporal/espacial</a></li>
+              </ul>
+            </div>
+            <div class="mindmap-branch">
+              <div class="mindmap-branch-title">➕ <a href="capitulos/cap2.html" style="color:inherit">ALU / FPU</a></div>
+              <ul class="mindmap-branch-items">
+                <li><a href="capitulos/cap2.html">Soma, subtração, comparação</a></li>
+                <li><a href="capitulos/cap2.html">AND, OR, XOR, NOT</a></li>
+                <li><a href="capitulos/cap2.html">FPU: números decimais</a></li>
+                <li><a href="capitulos/cap2.html">IEEE 754 ponto flutuante</a></li>
+              </ul>
+            </div>
+            <div class="mindmap-branch">
+              <div class="mindmap-branch-title">⏱️ <a href="capitulos/cap2.html" style="color:inherit">Clock</a></div>
+              <ul class="mindmap-branch-items">
+                <li><a href="capitulos/cap2.html">Frequência em GHz</a></li>
+                <li><a href="capitulos/cap2.html">Ciclos por segundo</a></li>
+                <li><a href="capitulos/cap2.html">Sincroniza operações</a></li>
+                <li><a href="capitulos/cap2.html">IPC: instruções por ciclo</a></li>
+              </ul>
+            </div>
+            <div class="mindmap-branch">
+              <div class="mindmap-branch-title">🧬 <a href="capitulos/cap9.html" style="color:inherit">Núcleos</a></div>
+              <ul class="mindmap-branch-items">
+                <li><a href="capitulos/cap9.html">Single-core → Multicore</a></li>
+                <li><a href="capitulos/cap9.html">Hyper-Threading / SMT</a></li>
+                <li><a href="capitulos/cap9.html">Paralelismo vs Concorrência</a></li>
+                <li><a href="capitulos/cap9.html">Threads (pthread)</a></li>
+              </ul>
+            </div>
+            <div class="mindmap-branch">
+              <div class="mindmap-branch-title">🚌 <a href="capitulos/cap2.html" style="color:inherit">Barramentos</a></div>
+              <ul class="mindmap-branch-items">
+                <li><a href="capitulos/cap2.html">Dados (transporta dados)</a></li>
+                <li><a href="capitulos/cap2.html">Endereços (posição na RAM)</a></li>
+                <li><a href="capitulos/cap2.html">Controle (sinais de comando)</a></li>
+                <li><a href="capitulos/cap2.html">Largura: 32-bit / 64-bit</a></li>
+              </ul>
+            </div>
+            <div class="mindmap-branch">
+              <div class="mindmap-branch-title">📚 <a href="capitulos/cap7.html" style="color:inherit">Stack</a></div>
+              <ul class="mindmap-branch-items">
+                <li><a href="capitulos/cap7.html">LIFO (último entra, primeiro sai)</a></li>
+                <li><a href="capitulos/cap7.html">Push / Pop</a></li>
+                <li><a href="capitulos/cap7.html">Stack Frame</a></li>
+                <li><a href="capitulos/cap7.html">RSP aponta o topo</a></li>
+                <li><a href="capitulos/cap7.html">Stack Overflow</a></li>
+              </ul>
+            </div>
+            <div class="mindmap-branch">
+              <div class="mindmap-branch-title">🏔️ <a href="capitulos/cap8.html" style="color:inherit">Heap</a></div>
+              <ul class="mindmap-branch-items">
+                <li><a href="capitulos/cap8.html">malloc, calloc, realloc</a></li>
+                <li><a href="capitulos/cap8.html">free (libera memória)</a></li>
+                <li><a href="capitulos/cap8.html">Alocação dinâmica</a></li>
+                <li><a href="capitulos/cap8.html">Memory Leak</a></li>
+              </ul>
+            </div>
+            <div class="mindmap-branch">
+              <div class="mindmap-branch-title">🐧 <a href="capitulos/cap12.html" style="color:inherit">Sistema Operacional</a></div>
+              <ul class="mindmap-branch-items">
+                <li><a href="capitulos/cap12.html">Processos e Threads</a></li>
+                <li><a href="capitulos/cap12.html">Escalonamento (CFS)</a></li>
+                <li><a href="capitulos/cap12.html">Troca de Contexto</a></li>
+                <li><a href="capitulos/cap11.html">User Mode / Kernel Mode</a></li>
+                <li><a href="capitulos/cap11.html">Syscalls</a></li>
+              </ul>
+            </div>
+            <div class="mindmap-branch">
+              <div class="mindmap-branch-title">🔔 <a href="capitulos/cap10.html" style="color:inherit">Interrupções</a></div>
+              <ul class="mindmap-branch-items">
+                <li><a href="capitulos/cap10.html">Teclado, Mouse, Disco</a></li>
+                <li><a href="capitulos/cap10.html">Rede, Timer</a></li>
+                <li><a href="capitulos/cap10.html">IDT (Interrupt Descriptor Table)</a></li>
+                <li><a href="capitulos/cap10.html">Salva/restaura estado</a></li>
+              </ul>
+            </div>
+            <div class="mindmap-branch">
+              <div class="mindmap-branch-title">⚙️ <a href="capitulos/cap3.html" style="color:inherit">Execução</a></div>
+              <ul class="mindmap-branch-items">
+                <li><a href="capitulos/cap3.html">Fetch → Decode → Execute</a></li>
+                <li><a href="capitulos/cap3.html">Pipeline (5 estágios)</a></li>
+                <li><a href="capitulos/cap3.html">Código C → Assembly → Binário</a></li>
+                <li><a href="capitulos/cap13.html">Compilador (gcc/clang)</a></li>
+              </ul>
+            </div>
+            <div class="mindmap-branch">
+              <div class="mindmap-branch-title">🛡️ <a href="capitulos/cap14.html" style="color:inherit">Cibersegurança</a></div>
+              <ul class="mindmap-branch-items">
+                <li><a href="capitulos/cap14.html">Buffer Overflow</a></li>
+                <li><a href="capitulos/cap14.html">Stack Canary</a></li>
+                <li><a href="capitulos/cap14.html">ASLR, DEP/NX</a></li>
+                <li><a href="capitulos/cap14.html">ROP Chains</a></li>
+                <li><a href="capitulos/cap14.html">Engenharia Reversa</a></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+  <section class="conexoes-section">
+    <div class="container">
+      <h2>🔗 Conectando com Outras Áreas</h2>
+      <div class="conexoes-grid">
+        <div class="conexao-card">
+          <h3>💻 Linguagem C</h3>
+          <p>Compilação (preprocessador → compilador → assembler → linker), variáveis na memória, ponteiros e endereços, loops e funções mapeados para Assembly, convenções de chamada (RDI, RSI, RAX).</p>
+        </div>
+        <div class="conexao-card">
+          <h3>🐧 Linux</h3>
+          <p>Syscalls como interface CPU↔SO, /proc e /sys expondo hardware, strace mostrando chamadas de sistema, processos como arquivos, permissões e modos de execução.</p>
+        </div>
+        <div class="conexao-card">
+          <h3>🖥️ Sistemas Operacionais</h3>
+          <p>Escalonamento de processos, troca de contexto, memória virtual (MMU), proteção entre processos, drivers como ponte hardware↔software.</p>
+        </div>
+        <div class="conexao-card">
+          <h3>🌐 Redes</h3>
+          <p>Pacotes de rede geram interrupções na CPU, processamento de protocolos consome ciclos, buffers de rede na memória, DMA (Direct Memory Access) libera a CPU.</p>
+        </div>
+        <div class="conexao-card">
+          <h3>🛡️ Cibersegurança</h3>
+          <p>Buffer overflow explora stack, ASLR randomiza endereços, DEP protege execução, ROP reutiliza código, engenharia reversa analisa Assembly.</p>
+        </div>
+        <div class="conexao-card">
+          <h3>🔍 Engenharia Reversa</h3>
+          <p>objdump e gdb analisam binários, radare2 e Ghidra desmontam código, registradores revelam estado do programa, syscalls mostram comportamento.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+  <footer class="footer">
+    <div class="container">
+      <p>Processador Desmistificado &copy; 2026 — Do Zero à Compreensão Real da CPU</p>
+      <p style="margin-top:0.5rem;font-size:0.85rem">Você agora consegue visualizar o caminho completo: uma linha de código em C → compilador → Assembly → código de máquina → execução física na CPU. 🎉</p>
+    </div>
+  </footer>
+  <script src="js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Processador Desmistificado | Ebook Interativo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/components.css">
+  <style>
+    .hero {
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      padding: 2rem;
+    }
+    .hero-bg {
+      position: absolute;
+      inset: 0;
+      background: 
+        radial-gradient(ellipse at 20% 50%, rgba(99,102,241,0.15) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 20%, rgba(139,92,246,0.1) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 80%, rgba(59,130,246,0.1) 0%, transparent 50%);
+    }
+    .hero-grid {
+      position: absolute;
+      inset: 0;
+      background-image: 
+        linear-gradient(rgba(99,102,241,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(99,102,241,0.03) 1px, transparent 1px);
+      background-size: 60px 60px;
+      mask-image: radial-gradient(ellipse at center, black 30%, transparent 70%);
+    }
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      text-align: center;
+      max-width: 900px;
+      animation: fadeIn 1s ease;
+    }
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      background: rgba(99,102,241,0.1);
+      border: 1px solid rgba(99,102,241,0.3);
+      border-radius: 100px;
+      font-size: 0.85rem;
+      color: var(--primary-light);
+      margin-bottom: 1.5rem;
+    }
+    .hero h1 {
+      font-size: clamp(2.5rem, 6vw, 4.5rem);
+      font-weight: 800;
+      line-height: 1.1;
+      margin-bottom: 1.5rem;
+    }
+    .hero h1 .text-gradient { display: block; }
+    .hero-desc {
+      font-size: 1.15rem;
+      color: var(--text-secondary);
+      max-width: 600px;
+      margin: 0 auto 2rem;
+    }
+    .hero-buttons {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 3rem;
+    }
+    .hero-stats {
+      display: flex;
+      justify-content: center;
+      gap: 3rem;
+      flex-wrap: wrap;
+    }
+    .hero-stat { text-align: center; }
+    .hero-stat-value {
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--primary-light);
+    }
+    .hero-stat-label {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+    .navbar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 1000;
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: var(--transition);
+    }
+    .navbar.scrolled {
+      background: var(--glass);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--glass-border);
+    }
+    .navbar-logo {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: var(--text-primary);
+    }
+    .navbar-logo-icon {
+      width: 36px; height: 36px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+    }
+    .navbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .navbar-btn {
+      padding: 0.5rem 1rem;
+      border-radius: var(--radius-sm);
+      background: var(--bg-elevated);
+      border: 1px solid var(--glass-border);
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: var(--transition);
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .navbar-btn:hover {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+    .progress-section {
+      padding: 4rem 0;
+      background: linear-gradient(180deg, var(--bg-main), var(--bg-card));
+    }
+    .progress-card {
+      background: var(--bg-card);
+      border-radius: var(--radius-lg);
+      padding: 2rem;
+      border: 1px solid var(--glass-border);
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      align-items: center;
+    }
+    .progress-info h2 { margin-bottom: 0.5rem; }
+    .progress-info p {
+      color: var(--text-secondary);
+      margin-bottom: 1rem;
+    }
+    .progress-stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+    }
+    .progress-stat-card {
+      background: var(--bg-elevated);
+      border-radius: var(--radius-md);
+      padding: 1rem;
+      text-align: center;
+    }
+    .progress-stat-card .value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--primary-light);
+    }
+    .progress-stat-card .label {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+    .capitulos-section { padding: 4rem 0; }
+    .section-header {
+      text-align: center;
+      margin-bottom: 3rem;
+    }
+    .section-header h2 { margin-bottom: 0.5rem; }
+    .section-header p { color: var(--text-secondary); }
+    .capitulos-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 1.5rem;
+    }
+    .capitulo-card {
+      position: relative;
+      background: var(--bg-card);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      border: 1px solid var(--glass-border);
+      transition: var(--transition);
+      cursor: pointer;
+      text-decoration: none;
+      color: inherit;
+      display: block;
+    }
+    .capitulo-card:hover {
+      transform: translateY(-6px);
+      box-shadow: var(--shadow-lg);
+    }
+    .capitulo-card-header {
+      padding: 1.5rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .capitulo-card-header::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      opacity: 0.1;
+    }
+    .capitulo-numero {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px; height: 40px;
+      background: rgba(255,255,255,0.15);
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 1rem;
+      margin-bottom: 1rem;
+    }
+    .capitulo-titulo {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+    .capitulo-desc {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+    .capitulo-card-footer {
+      padding: 1rem 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 1px solid var(--glass-border);
+    }
+    .capitulo-status {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.85rem;
+    }
+    .capitulo-status.concluido { color: var(--accent-success); }
+    .capitulo-status.pendente { color: var(--text-muted); }
+    .capitulo-icon { font-size: 1.2rem; }
+
+    .cap1 .capitulo-card-header::before { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+    .cap1 .capitulo-numero { background: rgba(59,130,246,0.2); color: #60a5fa; }
+    .cap2 .capitulo-card-header::before { background: linear-gradient(135deg, #22c55e, #15803d); }
+    .cap2 .capitulo-numero { background: rgba(34,197,94,0.2); color: #4ade80; }
+    .cap3 .capitulo-card-header::before { background: linear-gradient(135deg, #a855f7, #7c3aed); }
+    .cap3 .capitulo-numero { background: rgba(168,85,247,0.2); color: #c084fc; }
+    .cap4 .capitulo-card-header::before { background: linear-gradient(135deg, #ef4444, #b91c1c); }
+    .cap4 .capitulo-numero { background: rgba(239,68,68,0.2); color: #f87171; }
+    .cap5 .capitulo-card-header::before { background: linear-gradient(135deg, #f97316, #c2410c); }
+    .cap5 .capitulo-numero { background: rgba(249,115,22,0.2); color: #fb923c; }
+    .cap6 .capitulo-card-header::before { background: linear-gradient(135deg, #06b6d4, #0891b2); }
+    .cap6 .capitulo-numero { background: rgba(6,182,212,0.2); color: #22d3ee; }
+    .cap7 .capitulo-card-header::before { background: linear-gradient(135deg, #ec4899, #be185d); }
+    .cap7 .capitulo-numero { background: rgba(236,72,153,0.2); color: #f472b6; }
+    .cap8 .capitulo-card-header::before { background: linear-gradient(135deg, #8b5cf6, #6d28d9); }
+    .cap8 .capitulo-numero { background: rgba(139,92,246,0.2); color: #a78bfa; }
+    .cap9 .capitulo-card-header::before { background: linear-gradient(135deg, #eab308, #a16207); }
+    .cap9 .capitulo-numero { background: rgba(234,179,8,0.2); color: #facc15; }
+    .cap10 .capitulo-card-header::before { background: linear-gradient(135deg, #14b8a6, #0f766e); }
+    .cap10 .capitulo-numero { background: rgba(20,184,166,0.2); color: #2dd4bf; }
+    .cap11 .capitulo-card-header::before { background: linear-gradient(135deg, #f43f5e, #be123c); }
+    .cap11 .capitulo-numero { background: rgba(244,63,94,0.2); color: #fb7185; }
+    .cap12 .capitulo-card-header::before { background: linear-gradient(135deg, #6366f1, #4338ca); }
+    .cap12 .capitulo-numero { background: rgba(99,102,241,0.2); color: #818cf8; }
+    .cap13 .capitulo-card-header::before { background: linear-gradient(135deg, #0ea5e9, #0369a1); }
+    .cap13 .capitulo-numero { background: rgba(14,165,233,0.2); color: #38bdf8; }
+    .cap14 .capitulo-card-header::before { background: linear-gradient(135deg, #1e1e2e, #000000); }
+    .cap14 .capitulo-numero { background: rgba(255,255,255,0.1); color: #a0a0a0; }
+
+    .conquistas-section {
+      padding: 4rem 0;
+      background: var(--bg-card);
+    }
+    .conquistas-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 1rem;
+    }
+    .conquista-card {
+      background: var(--bg-elevated);
+      border-radius: var(--radius-md);
+      padding: 1.25rem;
+      text-align: center;
+      border: 1px solid var(--glass-border);
+      transition: var(--transition);
+      opacity: 0.5;
+    }
+    .conquista-card.desbloqueada {
+      opacity: 1;
+      border-color: rgba(245,158,11,0.3);
+    }
+    .conquista-card.desbloqueada:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 24px rgba(245,158,11,0.2);
+    }
+    .conquista-icon { font-size: 2.5rem; margin-bottom: 0.75rem; }
+    .conquista-nome { font-weight: 600; font-size: 0.9rem; margin-bottom: 0.25rem; }
+    .conquista-desc { font-size: 0.8rem; color: var(--text-muted); }
+
+    .desafios-section { padding: 4rem 0; }
+    .desafios-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+    }
+    .desafio-card {
+      background: var(--bg-card);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem;
+      border: 1px solid var(--glass-border);
+      position: relative;
+      overflow: hidden;
+    }
+    .desafio-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--primary), var(--primary-light));
+    }
+    .desafio-tag {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      background: rgba(99,102,241,0.1);
+      color: var(--primary-light);
+      border-radius: 100px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      margin-bottom: 0.75rem;
+    }
+    .desafio-titulo { font-weight: 700; margin-bottom: 0.5rem; }
+    .desafio-desc {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      margin-bottom: 1rem;
+    }
+    .desafio-recompensa {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.85rem;
+      color: var(--accent-warning);
+    }
+    .footer {
+      padding: 3rem 0;
+      border-top: 1px solid var(--glass-border);
+      text-align: center;
+    }
+    .footer p { color: var(--text-muted); font-size: 0.9rem; }
+    #particles-canvas {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 1;
+    }
+    @media (max-width: 768px) {
+      .hero-stats { gap: 1.5rem; }
+      .progress-card { grid-template-columns: 1fr; }
+      .progress-stats-grid { grid-template-columns: repeat(3, 1fr); }
+      .capitulos-grid { grid-template-columns: 1fr; }
+      .navbar { padding: 0.75rem 1rem; }
+      .navbar-btn span { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar" id="navbar">
+    <a href="index.html" class="navbar-logo">
+      <div class="navbar-logo-icon">🧠</div>
+      <span>Processador Desmistificado</span>
+    </a>
+    <div class="navbar-actions">
+      <button class="navbar-btn" onclick="PainelPersonalizacao.abrir()">
+        <span>⚙️</span>
+        <span>Personalizar</span>
+      </button>
+    </div>
+  </nav>
+
+  <section class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-grid"></div>
+    <canvas id="particles-canvas"></canvas>
+    <div class="hero-content">
+      <div class="hero-badge">
+        <span>⚡</span>
+        <span>Ebook Interativo Premium</span>
+      </div>
+      <h1>
+        Processador
+        <span class="text-gradient">Desmistificado</span>
+      </h1>
+      <p class="hero-desc">
+        Do Zero à Compreensão Real da CPU. Um guia visual, didático e progressivo 
+        que conecta cada conceito de hardware com programação em C, Linux, 
+        sistemas operacionais e cibersegurança.
+      </p>
+      <div class="hero-buttons">
+        <a href="#capitulos" class="btn btn-primary">
+          <span>🚀</span>
+          <span>Começar Agora</span>
+        </a>
+        <a href="#progresso" class="btn btn-secondary">
+          <span>📊</span>
+          <span>Meu Progresso</span>
+        </a>
+      </div>
+      <div class="hero-stats">
+        <div class="hero-stat">
+          <div class="hero-stat-value">14</div>
+          <div class="hero-stat-label">Capítulos</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-value">50+</div>
+          <div class="hero-stat-label">Exercícios</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-value">12</div>
+          <div class="hero-stat-label">Mini Jogos</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-value">∞</div>
+          <div class="hero-stat-label">Possibilidades</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="progress-section" id="progresso">
+    <div class="container">
+      <div class="progress-card">
+        <div class="progress-info">
+          <h2>📈 Seu Progresso</h2>
+          <p>Acompanhe sua jornada de aprendizado pelo mundo dos processadores.</p>
+          <div class="progress-bar" style="margin-bottom:0.5rem">
+            <div class="progress-fill" id="progresso-barra" style="width:0%"></div>
+          </div>
+          <p style="font-size:0.9rem"><span id="progresso-texto">0%</span> concluído</p>
+        </div>
+        <div class="progress-stats-grid">
+          <div class="progress-stat-card">
+            <div class="value" id="stat-caps">0</div>
+            <div class="label">Capítulos</div>
+          </div>
+          <div class="progress-stat-card">
+            <div class="value" id="stat-xp">0</div>
+            <div class="label">XP Total</div>
+          </div>
+          <div class="progress-stat-card">
+            <div class="value" id="stat-nivel">1</div>
+            <div class="label">Nível</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="capitulos-section" id="capitulos">
+    <div class="container">
+      <div class="section-header">
+        <h2>📚 Capítulos</h2>
+        <p>Explore cada capítulo e domine os conceitos do processador</p>
+      </div>
+      <div class="capitulos-grid">
+        <a href="capitulos/cap1.html" class="capitulo-card cap1">
+          <div class="capitulo-card-header">
+            <div class="capitulo-numero">01</div>
+            <div class="capitulo-titulo">O Que é um Processador?</div>
+            <div class="capitulo-desc">A CPU como cérebro do computador. Ciclo básico de execução e diferença entre CPU, RAM e armazenamento.</div>
+          </div>
+          <div class="capitulo-card-footer">
+            <span class="capitulo-status pendente" id="status-1">
+              <span class="capitulo-icon">○</span>
+              <span>Pendente</span>
+            </span>
+            <span style="color:var(--text-muted);font-size:0.85rem">⏱️ 15 min</span>
+          </div>
+        </a>
+        <a href="capitulos/cap2.html" class="capitulo-card cap2">
+          <div class="capitulo-card-header">
+            <div class="capitulo-numero">02</div>
+            <div class="capitulo-titulo">Anatomia de uma CPU</div>
+            <div class="capitulo-desc">CU, ALU, FPU, Clock e Barramentos Internos. Conheça os componentes que fazem a mágica acontecer.</div>
+          </div>
+          <div class="capitulo-card-footer">
+            <span class="capitulo-status pendente" id="status-2">
+              <span class="capitulo-icon">○</span>
+              <span>Pendente</span>
+            </span>
+            <span style="color:var(--text-muted);font-size:0.85rem">⏱️ 20 min</span>
+          </div>
+        </a>
+        <a href="capitulos/cap3.html" class="capitulo-card cap3">
+          <div class="capitulo-card-header">
+            <div class="capitulo-numero">03</div>
+            <div class="capitulo-titulo">Como um Programa é Executado</div>
+            <div class="capitulo-desc">O ciclo Fetch-Decode-Execute. Do código C ao assembly e às instruções de máquina.</div>
+          </div>
+          <div class="capitulo-card-footer">
+            <span class="capitulo-status pendente" id="status-3">
+              <span class="capitulo-icon">○</span>
+              <span>Pendente</span>
+            </span>
+            <span style="color:var(--text-muted);font-size:0.85rem">⏱️ 25 min</span>
+          </div>
+        </a>
+        <a href="capitulos/cap4.html" class="capitulo-card cap4">
+          <div class="capitulo-card-header">
+            <div class="capitulo-numero">04</div>
+            <div class="capitulo-titulo">Registradores</div>
+            <div class="capitulo-desc">RAX, RBX, RCX, RDX, RIP, RSP, RBP e FLAGS. Os "armários de trabalho" mais rápidos do computador.</div>
+          </div>
+          <div class="capitulo-card-footer">
+            <span class="capitulo-status pendente" id="status-4">
+              <span class="capitulo-icon">○</span>
+              <span>Pendente</span>
+            </span>
+            <span style="color:var(--text-muted);font-size:0.85rem">⏱️ 20 min</span>
+          </div>
+        </a>
+        <a href="capitulos/cap5.html" class="capitulo-card cap5">
+          <div class="capitulo-card-header">
+            <div class="capitulo-numero">05</div>
+            <div class="capitulo-titulo">Memória e Processador</div>
+            <div class="capitulo-desc">Como a CPU acessa memória. Endereços, variáveis em C e a relação com ponteiros.</div>
+          </div>
+          <div class="capitulo-card-footer">
+            <span class="capitulo-status pendente" id="status-5">
+              <span class="capitulo-icon">○</span>
+              <span>Pendente</span>
+            </span>
+            <span style="color:var(--text-muted);font-size:0.85rem">⏱️ 20 min</span>
+          </div>
+        </a>
+        <a href="capitulos/cap6.html" class="capitulo-card cap6">
+          <div class="capitulo-card-header">
+            <div class="capitulo-numero">06</div>
+            <div class="capitulo-titulo">Cache</div>
+            <div class="capitulo-desc">Cache L1, L2 e L3. Por que existe e a hierarquia de latência do registrador ao HD.</div>
+          </div>
+          <div class="capitulo-card-footer">
+            <span class="capitulo-status pendente" id="status-6">
+              <span class="capitulo-icon">○</span>
+              <span>Pendente</span>
+            </span>
+            <span style="color:var(--text-muted);font-size:0.85rem">⏱️ 15 min</span>
+          </div>
+        </a>
+        <a href="capitulos/cap7.html" class="capitulo-card cap7">
+          <div class="capitulo-card-header">
+            <div class="capitulo-numero">07</div>
+            <div class="capitulo-titulo">Pilha (Stack)</div>
+            <div class="capitulo-desc">Push, Pop, chamadas de função e Stack Frames. Relação direta com funções em C.</div>
+          </div>
+          <div class="capitulo-card-footer">
+            <span class="capitulo-status pendente" id="status-7">
+              <span class="capitulo-icon">○</span>
+              <span>Pendente</span>
+            </span>
+            <span style="color:var(--text-muted);font-size:0.85rem">⏱️ 20 min</span>
+          </div>
+        </a>
+        <a href="capitulos/cap8.html" class="capitulo-card cap8">
+          <div class="capitulo-card-header">
+            <div class="capitulo-numero">08</div>
+            <div class="capitulo-titulo">Heap</div>
+            <div class="capitulo-desc">malloc, calloc, realloc e free. Como o processador acessa áreas dinâmicas de memória.</div>
+          </div>
+          <div class="capitulo-card-footer">
+            <span class="capitulo-status pendente" id="status-8">
+              <span class="capitulo-icon">○</span>
+              <span>Pendente</span>
+            </span>
+            <span style="color:var(--text-muted);font-size:0.85rem">⏱️ 20 min</span>
+          </div>
+        </a>
+        <a href="capitulos/cap9.html" class="capitulo-card cap9">
+          <div class="capitulo-card-header">
+            <div class="capitulo-numero">09</div>
+            <div class="capitulo-titulo">Núcleos e Threads</div>
+            <div class="capitulo-desc">Multicore, Hyper-Threading, paralelismo e concorrência. Diagramas comparativos.</div>
+          </div>
+          <div class="capitulo-card-footer">
+            <span class="capitulo-status pendente" id="status-9">
+              <span class="capitulo-icon">○</span>
+              <span>Pendente</span>
+            </span>
+            <span style="color:var(--text-muted);font-size:0.85rem">⏱️ 20 min</span>
+          </div>
+        </a>
+        <a href="capitulos/cap10.html" class="capitulo-card cap10">
+          <div class="capitulo-card-header">
+            <div class="capitulo-numero">10</div>
+            <div class="capitulo-titulo">Interrupções</div>
+            <div class="capitulo-desc">Teclado, mouse, disco, rede e timer. O fluxo completo de uma interrupção na CPU.</div>
+          </div>
+          <div class="capitulo-card-footer">
+            <span class="capitulo-status pendente" id="status-10">
+              <span class="capitulo-icon">○</span>
+              <span>Pendente</span>
+            </span>
+            <span style="color:var(--text-muted);font-size:0.85rem">⏱️ 15 min</span>
+          </div>
+        </a>
+        <a href="capitulos/cap11.html" class="capitulo-card cap11">
+          <div class="capitulo-card-header">
+            <div class="capitulo-numero">11</div>
+            <div class="capitulo-titulo">Modos de Execução</div>
+            <div class="capitulo-desc">User Mode vs Kernel Mode. Segurança e relação com Linux e Windows.</div>
+          </div>
+          <div class="capitulo-card-footer">
+            <span class="capitulo-status pendente" id="status-11">
+              <span class="capitulo-icon">○</span>
+              <span>Pendente</span>
+            </span>
+            <span style="color:var(--text-muted);font-size:0.85rem">⏱️ 15 min</span>
+          </div>
+        </a>
+        <a href="capitulos/cap12.html" class="capitulo-card cap12">
+          <div class="capitulo-card-header">
+            <div class="capitulo-numero">12</div>
+            <div class="capitulo-titulo">CPU e Sistema Operacional</div>
+            <div class="capitulo-desc">Como o Linux conversa com a CPU. Processos, threads, escalonamento e troca de contexto.</div>
+          </div>
+          <div class="capitulo-card-footer">
+            <span class="capitulo-status pendente" id="status-12">
+              <span class="capitulo-icon">○</span>
+              <span>Pendente</span>
+            </span>
+            <span style="color:var(--text-muted);font-size:0.85rem">⏱️ 25 min</span>
+          </div>
+        </a>
+        <a href="capitulos/cap13.html" class="capitulo-card cap13">
+          <div class="capitulo-card-header">
+            <div class="capitulo-numero">13</div>
+            <div class="capitulo-titulo">CPU e Linguagem C</div>
+            <div class="capitulo-desc">Do compilador ao código de máquina. Variáveis, loops, funções e ponteiros na CPU.</div>
+          </div>
+          <div class="capitulo-card-footer">
+            <span class="capitulo-status pendente" id="status-13">
+              <span class="capitulo-icon">○</span>
+              <span>Pendente</span>
+            </span>
+            <span style="color:var(--text-muted);font-size:0.85rem">⏱️ 25 min</span>
+          </div>
+        </a>
+        <a href="capitulos/cap14.html" class="capitulo-card cap14">
+          <div class="capitulo-card-header">
+            <div class="capitulo-numero">14</div>
+            <div class="capitulo-titulo">CPU e Cibersegurança</div>
+            <div class="capitulo-desc">Engenharia reversa, análise de malware, buffer overflow, stack overflow e ROP.</div>
+          </div>
+          <div class="capitulo-card-footer">
+            <span class="capitulo-status pendente" id="status-14">
+              <span class="capitulo-icon">○</span>
+              <span>Pendente</span>
+            </span>
+            <span style="color:var(--text-muted);font-size:0.85rem">⏱️ 25 min</span>
+          </div>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section class="conquistas-section">
+    <div class="container">
+      <div class="section-header">
+        <h2>🏆 Conquistas</h2>
+        <p>Desbloqueie conquistas ao completar capítulos e desafios</p>
+      </div>
+      <div class="conquistas-grid">
+        <div class="conquista-card" id="conq-1">
+          <div class="conquista-icon">🚀</div>
+          <div class="conquista-nome">Primeiros Passos</div>
+          <div class="conquista-desc">Complete o Capítulo 1</div>
+        </div>
+        <div class="conquista-card" id="conq-2">
+          <div class="conquista-icon">🔧</div>
+          <div class="conquista-nome">Engenheiro</div>
+          <div class="conquista-desc">Complete o Capítulo 2</div>
+        </div>
+        <div class="conquista-card" id="conq-3">
+          <div class="conquista-icon">💻</div>
+          <div class="conquista-nome">Programador</div>
+          <div class="conquista-desc">Complete o Capítulo 3</div>
+        </div>
+        <div class="conquista-card" id="conq-4">
+          <div class="conquista-icon">📊</div>
+          <div class="conquista-nome">Analista</div>
+          <div class="conquista-desc">Complete 5 capítulos</div>
+        </div>
+        <div class="conquista-card" id="conq-5">
+          <div class="conquista-icon">🧠</div>
+          <div class="conquista-nome">Mestre da CPU</div>
+          <div class="conquista-desc">Complete 10 capítulos</div>
+        </div>
+        <div class="conquista-card" id="conq-6">
+          <div class="conquista-icon">👑</div>
+          <div class="conquista-nome">Lenda</div>
+          <div class="conquista-desc">Complete todos os capítulos</div>
+        </div>
+        <div class="conquista-card" id="conq-7">
+          <div class="conquista-icon">🎯</div>
+          <div class="conquista-nome">Atirador de Elite</div>
+          <div class="conquista-desc">Acerte 100% em um quiz</div>
+        </div>
+        <div class="conquista-card" id="conq-8">
+          <div class="conquista-icon">⚡</div>
+          <div class="conquista-nome">Velocista</div>
+          <div class="conquista-desc">Alcance Nível 5</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="desafios-section">
+    <div class="container">
+      <div class="section-header">
+        <h2>🎯 Desafios</h2>
+        <p>Missões extras para testar seus conhecimentos</p>
+      </div>
+      <div class="desafios-grid">
+        <div class="desafio-card">
+          <span class="desafio-tag">Quiz</span>
+          <div class="desafio-titulo">Quiz Geral do Processador</div>
+          <div class="desafio-desc">Teste seus conhecimentos sobre todos os conceitos aprendidos.</div>
+          <div class="desafio-recompensa">
+            <span>🏆</span>
+            <span>+200 XP</span>
+          </div>
+        </div>
+        <div class="desafio-card">
+          <span class="desafio-tag">Flashcards</span>
+          <div class="desafio-titulo">Memorize os Registradores</div>
+          <div class="desafio-desc">Use os flashcards para memorizar os registradores x86_64.</div>
+          <div class="desafio-recompensa">
+            <span>🏆</span>
+            <span>+150 XP</span>
+          </div>
+        </div>
+        <div class="desafio-card">
+          <span class="desafio-tag">Arrastar</span>
+          <div class="desafio-titulo">Associe os Conceitos</div>
+          <div class="desafio-desc">Relacione termos técnicos com suas definições corretas.</div>
+          <div class="desafio-recompensa">
+            <span>🏆</span>
+            <span>+100 XP</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="container">
+      <p>Processador Desmistificado &copy; 2026 — Ebook Interativo de Arquitetura de Computadores</p>
+      <p style="margin-top:0.5rem;font-size:0.8rem">Feito com 💜 para estudantes de programação, ADS, Linux e cibersegurança</p>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+  <script>
+    window.addEventListener('scroll', () => {
+      const navbar = document.getElementById('navbar');
+      if (window.scrollY > 50) navbar.classList.add('scrolled');
+      else navbar.classList.remove('scrolled');
+    });
+
+    const canvas = document.getElementById('particles-canvas');
+    const ctx = canvas.getContext('2d');
+    let particles = [];
+    function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+
+    class Particle {
+      constructor() { this.reset(); }
+      reset() {
+        this.x = Math.random() * canvas.width;
+        this.y = Math.random() * canvas.height;
+        this.size = Math.random() * 2 + 0.5;
+        this.speedX = (Math.random() - 0.5) * 0.5;
+        this.speedY = (Math.random() - 0.5) * 0.5;
+        this.opacity = Math.random() * 0.5 + 0.1;
+      }
+      update() {
+        this.x += this.speedX; this.y += this.speedY;
+        if (this.x < 0 || this.x > canvas.width || this.y < 0 || this.y > canvas.height) this.reset();
+      }
+      draw() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(99, 102, 241, ${this.opacity})`;
+        ctx.fill();
+      }
+    }
+    for (let i = 0; i < 80; i++) particles.push(new Particle());
+    function animateParticles() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      particles.forEach(p => { p.update(); p.draw(); });
+      requestAnimationFrame(animateParticles);
+    }
+    animateParticles();
+
+    function atualizarProgresso() {
+      const caps = Progresso.getCapitulosConcluidos();
+      const pct = Progresso.getPorcentagem();
+      document.getElementById('progresso-barra').style.width = pct + '%';
+      document.getElementById('progresso-texto').textContent = pct + '%';
+      document.getElementById('stat-caps').textContent = caps.length;
+      document.getElementById('stat-xp').textContent = Progresso.dados.xp;
+      document.getElementById('stat-nivel').textContent = Progresso.dados.nivel;
+      for (let i = 1; i <= 14; i++) {
+        const statusEl = document.getElementById('status-' + i);
+        if (statusEl && Progresso.isConcluido(i)) {
+          statusEl.className = 'capitulo-status concluido';
+          statusEl.innerHTML = '<span class="capitulo-icon">✓</span><span>Concluído</span>';
+        }
+      }
+      if (Progresso.isConcluido(1)) document.getElementById('conq-1').classList.add('desbloqueada');
+      if (Progresso.isConcluido(2)) document.getElementById('conq-2').classList.add('desbloqueada');
+      if (Progresso.isConcluido(3)) document.getElementById('conq-3').classList.add('desbloqueada');
+      if (caps.length >= 5) document.getElementById('conq-4').classList.add('desbloqueada');
+      if (caps.length >= 10) document.getElementById('conq-5').classList.add('desbloqueada');
+      if (caps.length >= 14) document.getElementById('conq-6').classList.add('desbloqueada');
+      const scores = Object.values(Progresso.dados.quizScores);
+      if (scores.some(s => s === 100)) document.getElementById('conq-7').classList.add('desbloqueada');
+      if (Progresso.dados.nivel >= 5) document.getElementById('conq-8').classList.add('desbloqueada');
+    }
+    document.addEventListener('DOMContentLoaded', atualizarProgresso);
+  </script>
+</body>
+</html>

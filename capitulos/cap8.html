@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Capítulo 8 — Heap | Processador Desmistificado</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <style>
+    :root { --cap-primary: #8b5cf6; --cap-secondary: #a78bfa; }
+    .chapter-header { position: relative; padding: 6rem 0 3rem; overflow: hidden; }
+    .chapter-header::before { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, #8b5cf620, #a78bfa10); }
+    .chapter-header::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, #8b5cf660, transparent); }
+    .chapter-header-content { position: relative; z-index: 1; }
+    .chapter-badge { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.4rem 1rem; background: #8b5cf620; border: 1px solid #8b5cf640; border-radius: 100px; font-size: 0.85rem; color: #8b5cf6; margin-bottom: 1rem; }
+    .chapter-title { font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 800; margin-bottom: 1rem; background: linear-gradient(135deg, #8b5cf6, #a78bfa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .chapter-desc { font-size: 1.1rem; color: var(--text-secondary); max-width: 700px; }
+    .chapter-nav { position: fixed; top: 0; left: 0; right: 0; z-index: 1000; padding: 0.75rem 1.5rem; display: flex; justify-content: space-between; align-items: center; background: var(--glass); backdrop-filter: blur(20px); border-bottom: 1px solid var(--glass-border); }
+    .chapter-nav-back { display: flex; align-items: center; gap: 0.5rem; color: var(--text-secondary); font-size: 0.9rem; text-decoration: none; transition: var(--transition); }
+    .chapter-nav-back:hover { color: var(--text-primary); }
+    .chapter-nav-actions { display: flex; align-items: center; gap: 0.5rem; }
+    .chapter-nav-btn { padding: 0.4rem 0.8rem; border-radius: var(--radius-sm); background: var(--bg-elevated); border: 1px solid var(--glass-border); color: var(--text-secondary); cursor: pointer; transition: var(--transition); font-size: 0.85rem; }
+    .chapter-nav-btn:hover { background: var(--cap-primary); color: white; border-color: var(--cap-primary); }
+    .chapter-content { padding: 3rem 0; }
+    .content-section { margin-bottom: 3rem; }
+    .content-section h2 { font-size: 1.5rem; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 2px solid #8b5cf630; display: flex; align-items: center; gap: 0.75rem; }
+    .content-section h3 { font-size: 1.2rem; margin: 1.5rem 0 0.75rem; color: var(--cap-primary); }
+    .content-section p { margin-bottom: 1rem; line-height: 1.8; }
+    .content-section ul { margin-left: 1.5rem; margin-bottom: 1rem; }
+    .content-section li { margin-bottom: 0.5rem; color: var(--text-secondary); }
+    .diagram { background: var(--bg-card); border-radius: var(--radius-lg); padding: 2rem; margin: 1.5rem 0; border: 1px solid var(--glass-border); overflow-x: auto; }
+    .diagram-title { text-align: center; font-weight: 600; margin-bottom: 1.5rem; color: var(--cap-primary); }
+    .diagram-box { display: inline-block; padding: 1rem 1.5rem; background: linear-gradient(135deg, #8b5cf620, #a78bfa10); border: 2px solid #8b5cf640; border-radius: var(--radius-md); text-align: center; font-weight: 600; margin: 0.5rem; min-width: 120px; }
+    .diagram-arrow { display: inline-flex; align-items: center; justify-content: center; color: var(--cap-primary); font-size: 1.5rem; margin: 0 0.5rem; }
+    .diagram-row { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 0.5rem; margin: 0.5rem 0; }
+    .diagram-container { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; }
+    .diagram-layer { width: 100%; max-width: 500px; padding: 1rem; border-radius: var(--radius-md); text-align: center; font-weight: 600; position: relative; }
+    .diagram-layer::after { content: '↓'; position: absolute; bottom: -20px; left: 50%; transform: translateX(-50%); color: var(--text-muted); font-size: 1.2rem; }
+    .diagram-layer:last-child::after { display: none; }
+    .info-box { background: linear-gradient(135deg, #8b5cf610, #a78bfa05); border-left: 4px solid var(--cap-primary); border-radius: 0 var(--radius-md) var(--radius-md) 0; padding: 1.25rem; margin: 1.5rem 0; }
+    .info-box-title { font-weight: 700; color: var(--cap-primary); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; }
+    .curiosity-box { background: linear-gradient(135deg, rgba(245,158,11,0.1), rgba(245,158,11,0.05)); border-left: 4px solid #f59e0b; border-radius: 0 var(--radius-md) var(--radius-md) 0; padding: 1.25rem; margin: 1.5rem 0; }
+    .curiosity-box-title { font-weight: 700; color: #f59e0b; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; }
+    .warning-box { background: linear-gradient(135deg, rgba(239,68,68,0.1), rgba(239,68,68,0.05)); border-left: 4px solid #ef4444; border-radius: 0 var(--radius-md) var(--radius-md) 0; padding: 1.25rem; margin: 1.5rem 0; }
+    .warning-box-title { font-weight: 700; color: #ef4444; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; }
+    .quiz-section { background: linear-gradient(180deg, var(--bg-card), var(--bg-main)); padding: 3rem 0; border-top: 1px solid var(--glass-border); }
+    .quiz-section h2 { text-align: center; margin-bottom: 2rem; }
+    .flashcards-section { padding: 3rem 0; background: var(--bg-card); border-top: 1px solid var(--glass-border); }
+    .flashcards-section h2 { text-align: center; margin-bottom: 2rem; }
+    .dragdrop-section { padding: 3rem 0; background: linear-gradient(180deg, var(--bg-main), var(--bg-card)); border-top: 1px solid var(--glass-border); }
+    .dragdrop-section h2 { text-align: center; margin-bottom: 2rem; }
+    .complete-section { padding: 3rem 0; text-align: center; }
+    .complete-btn { padding: 1rem 2.5rem; font-size: 1.1rem; }
+    .chapter-footer-nav { display: flex; justify-content: space-between; align-items: center; padding: 2rem 0; border-top: 1px solid var(--glass-border); margin-top: 3rem; }
+    .chapter-footer-nav a { display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.5rem; background: var(--bg-card); border: 1px solid var(--glass-border); border-radius: var(--radius-md); color: var(--text-secondary); text-decoration: none; transition: var(--transition); }
+    .chapter-footer-nav a:hover { background: var(--cap-primary); color: white; border-color: var(--cap-primary); }
+    .footer { padding: 3rem 0; border-top: 1px solid var(--glass-border); text-align: center; }
+    .footer p { color: var(--text-muted); font-size: 0.9rem; }
+    @media (max-width: 768px) { .chapter-header { padding: 5rem 0 2rem; } .chapter-footer-nav { flex-direction: column; gap: 1rem; } .chapter-footer-nav a { width: 100%; justify-content: center; } }
+  </style>
+</head>
+<body>
+  <nav class="chapter-nav">
+    <a href="../index.html" class="chapter-nav-back"><span>←</span><span>Voltar ao Início</span></a>
+    <div class="chapter-nav-actions">
+      <button class="chapter-nav-btn" onclick="PainelPersonalizacao.abrir()">⚙️ Personalizar</button>
+      <button class="chapter-nav-btn" onclick="Progresso.concluirCapitulo(8); this.textContent='✅ Concluído'; this.disabled=true; Progresso.notificar('🎉 Capítulo 8 concluído! +100 XP');">✓ Marcar Concluído</button>
+    </div>
+  </nav>
+  <header class="chapter-header">
+    <div class="container chapter-header-content">
+      <div class="chapter-badge"><span>🟣</span><span>Capítulo 08</span></div>
+      <h1 class="chapter-title">Heap</h1>
+      <p class="chapter-desc">🟣 Heap — parte essencial da jornada para compreender o funcionamento interno do processador.</p>
+    </div>
+  </header>
+  <main class="chapter-content"><div class="container">
+<div class="content-section">
+  <h2>🏔️ O Que é Heap?</h2>
+  <p>O Heap é uma região da memória RAM usada para alocação dinâmica — quando você não sabe de antemão quanto espaço precisa, ou quando precisa de dados que persistem além do escopo de uma função. Diferente da stack, o heap é gerenciado MANUALMENTE pelo programador.</p>
+
+  <div class="diagram">
+    <div class="diagram-title">🆚 Stack vs Heap</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;max-width:600px;margin:0 auto">
+      <div class="diagram-box" style="text-align:left;background:linear-gradient(135deg,#22c55e20,#15803d10);border-color:#22c55e40">
+        <strong>📚 STACK</strong><br>
+        <small style="color:var(--text-muted)">
+        ✓ Automático (compilador gerencia)<br>
+        ✓ Muito rápido<br>
+        ✗ Tamanho limitado (~8MB)<br>
+        ✗ Dados temporários<br>
+        ✗ Escopo de função
+        </small>
+      </div>
+      <div class="diagram-box" style="text-align:left;background:linear-gradient(135deg,#a855f720,#7c3aed10);border-color:#a855f740">
+        <strong>🏔️ HEAP</strong><br>
+        <small style="color:var(--text-muted)">
+        ✓ Tamanho grande (GBs)<br>
+        ✓ Dados persistentes<br>
+        ✓ Controle total do programador<br>
+        ✗ Mais lento (overhead)<br>
+        ✗ Risco de memory leak
+        </small>
+      </div>
+    </div>
+  </div>
+
+  <div class="info-box">
+    <div class="info-box-title">💡 Analogia</div>
+    <p>A Stack é como a mesa de trabalho do escritório — organizada, limitada, tudo limpo no fim do dia. O Heap é como um depósito — enorme, você guarda o que quiser, mas precisa lembrar de organizar e limpar sozinho!</p>
+  </div>
+</div>
+
+<div class="content-section">
+  <h2>🔧 malloc(), calloc(), realloc(), free()</h2>
+  <p>Em C, quatro funções controlam o heap:</p>
+
+  <pre><code>// malloc — aloca memória NÃO inicializada
+int *arr = malloc(100 * sizeof(int));
+// Retorna um ponteiro para 400 bytes (100 ints)
+// Os valores são LIXO (não inicializados!)
+
+// calloc — aloca e ZERA a memória
+int *arr2 = calloc(100, sizeof(int));
+// Mesmo que malloc, mas todos os bytes = 0
+
+// realloc — redimensiona uma alocação existente
+arr = realloc(arr, 200 * sizeof(int));
+// Aumenta de 100 para 200 ints
+// Pode mover os dados para outro lugar!
+
+// free — LIBERA a memória
+free(arr);
+// Devolve a memória para o sistema
+// APÓS free, NÃO use o ponteiro!</code></pre>
+
+  <div class="warning-box">
+    <div class="warning-box-title">⚠️ Erros Comuns</div>
+    <ul>
+      <li><strong>Memory Leak:</strong> Esquecer de chamar <code>free()</code> → memória nunca é liberada</li>
+      <li><strong>Use After Free:</strong> Usar ponteiro depois de <code>free()</code> → comportamento indefinido</li>
+      <li><strong>Double Free:</strong> Chamar <code>free()</code> duas vezes no mesmo ponteiro → crash</li>
+      <li><strong>NULL pointer:</strong> <code>malloc</code> pode retornar NULL se não houver memória</li>
+    </ul>
+  </div>
+</div>
+
+<div class="content-section">
+  <h2>🧠 Como o Processador Acessa o Heap</h2>
+  <p>Quando você chama <code>malloc</code>, o sistema operacional encontra um bloco livre no heap e retorna seu endereço. A CPU acessa esse endereço como qualquer outro:</p>
+
+  <pre><code>// C:
+int *ptr = malloc(sizeof(int) * 5);
+*ptr = 10;           // Escreve no heap
+*(ptr + 1) = 20;     // Escreve no próximo int
+ptr[2] = 30;         // Mesma coisa, notação array
+
+// Assembly equivalente:
+// call malloc           // SO aloca memória
+// mov [rax], 10        // *ptr = 10 (RAX = endereço retornado)
+// mov [rax+4], 20      // ptr[1] = 20 (int = 4 bytes)
+// mov [rax+8], 30      // ptr[2] = 30
+
+// O endereço no RAX é arbitrário — depende do SO
+// A CPU não sabe se é stack, heap ou .data!
+// Ela apenas lê/ESCREVE no endereço dado</code></pre>
+
+  <div class="diagram">
+    <div class="diagram-title">🗺️ Layout de Memória de um Programa</div>
+    <div style="display:flex;flex-direction:column;gap:0.25rem;max-width:400px;margin:0 auto;font-family:var(--font-mono);font-size:0.75rem">
+      <div style="background:#ef444420;padding:0.5rem;border-radius:4px;border:1px solid #ef444440;text-align:center">
+        <strong>Stack</strong> (cresce ↓) — Variáveis locais, frames
+      </div>
+      <div style="background:var(--bg-elevated);padding:0.5rem;border-radius:4px;text-align:center;color:var(--text-muted)">
+        ↓ Espaço livre ↓
+      </div>
+      <div style="background:#a855f720;padding:0.5rem;border-radius:4px;border:1px solid #a855f740;text-align:center">
+        <strong>Heap</strong> (cresce ↑) — malloc, calloc, realloc
+      </div>
+      <div style="background:#3b82f620;padding:0.5rem;border-radius:4px;border:1px solid #3b82f640;text-align:center">
+        <strong>.bss</strong> — Variáveis não inicializadas
+      </div>
+      <div style="background:#22c55e20;padding:0.5rem;border-radius:4px;border:1px solid #22c55e40;text-align:center">
+        <strong>.data</strong> — Variáveis globais/static
+      </div>
+      <div style="background:#f59e0b20;padding:0.5rem;border-radius:4px;border:1px solid #f59e0b40;text-align:center">
+        <strong>.text</strong> — Código do programa (read-only)
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="content-section">
+  <h2>🗺️ Resumo Visual</h2>
+  <div class="diagram">
+    <div class="diagram-title">🧩 Mapa Mental — Heap</div>
+    <div class="diagram-row">
+      <div class="diagram-box" style="min-width:200px">
+        <strong>🏔️ Heap</strong><br>
+        <small style="color:var(--text-muted)">
+        ├─ Alocação dinâmica<br>
+        ├─ malloc/calloc/realloc<br>
+        ├─ free para liberar<br>
+        └─ Grande, lento, manual
+        </small>
+      </div>
+      <span class="diagram-arrow">vs</span>
+      <div class="diagram-box" style="min-width:200px">
+        <strong>📚 Stack</strong><br>
+        <small style="color:var(--text-muted)">
+        ├─ Automático<br>
+        ├─ push/pop<br>
+        ├─ RSP/RBP<br>
+        └─ Pequeno, rápido, automático
+        </small>
+      </div>
+    </div>
+  </div>
+</div>
+</div></main>
+  <section class="quiz-section" id="quiz"><div class="container"><h2>🧠 Quiz do Capítulo 8</h2><div id="quiz-container"></div></div></section>
+  <section class="flashcards-section" id="flashcards"><div class="container"><h2>🎴 Flashcards</h2><div id="flashcards-container"></div></div></section>
+  <section class="dragdrop-section" id="dragdrop"><div class="container"><h2>🎯 Desafio: Arraste e Solte</h2><div id="dragdrop-container"></div></div></section>
+  <section class="complete-section"><div class="container"><h2>🎉 Parabéns por chegar até aqui!</h2><p class="mb-3">Você completou o conteúdo do Capítulo 8. Não se esqueça de marcar como concluído!</p><button class="btn btn-primary complete-btn" onclick="Progresso.concluirCapitulo(8); Progresso.notificar('🎉 Capítulo 8 concluído! +100 XP'); this.textContent='✅ Concluído'; this.disabled=true;">✓ Marcar Capítulo 8 como Concluído</button></div></section>
+  <div class="container"><div class="chapter-footer-nav"><a href="cap7.html">← Capítulo Anterior</a><a href="cap9.html">Próximo Capítulo →</a></div></div>
+  <footer class="footer"><div class="container"><p>Processador Desmistificado &copy; 2026</p></div></footer>
+  <script src="../js/main.js"></script>
+  <script>
+    const quizPerguntas = [
+  {
+    pergunta: "Qual função aloca memória no heap e ZERA os bytes?",
+    opcoes: ["malloc", "calloc", "realloc", "free"],
+    correta: 1
+  },
+  {
+    pergunta: "O que acontece se você esquecer de chamar free()?",
+    opcoes: ["O programa crasha imediatamente", "Memory leak — memória nunca é liberada", "A memória é liberada automaticamente", "Nada acontece"],
+    correta: 1
+  },
+  {
+    pergunta: "Qual é o principal risco do heap?",
+    opcoes: ["É muito lento", "É muito pequeno", "Memory leaks e uso após free", "Não pode armazenar structs"],
+    correta: 2
+  },
+  {
+    pergunta: "O que realloc faz?",
+    opcoes: ["Libera memória", "Aloca memória zerada", "Redimensiona uma alocação existente", "Copia dados da stack"],
+    correta: 2
+  },
+  {
+    pergunta: "Onde ficam variáveis alocadas com malloc?",
+    opcoes: ["Stack", "Heap", "Registradores", "Cache L1"],
+    correta: 1
+  }
+];
+    Quiz.criar('quiz-container', quizPerguntas, 8);
+
+    const flashcardsData = [
+  { frente: "O que é o Heap?", verso: "Região da memória RAM para alocação dinâmica, gerenciada manualmente pelo programador via malloc/calloc/realloc/free." },
+  { frente: "Qual a diferença entre malloc e calloc?", verso: "malloc aloca memória NÃO inicializada. calloc aloca e ZERA todos os bytes para 0." },
+  { frente: "O que é Memory Leak?", verso: "Quando memória alocada com malloc nunca é liberada com free, causando desperdício progressivo de memória." },
+  { frente: "O que faz realloc?", verso: "Redimensiona um bloco de memória já alocado. Pode mover os dados para um novo endereço." },
+  { frente: "Onde o heap fica no layout de memória?", verso: "Entre a stack (acima) e a seção .data/.bss (abaixo). Cresce para cima, enquanto a stack cresce para baixo." }
+];
+    Flashcards.criar('flashcards-container', flashcardsData);
+
+    const dragdropData = [
+  { alvo: "Aloca memória não inicializada", item: "malloc" },
+  { alvo: "Aloca e zera memória", item: "calloc" },
+  { alvo: "Redimensiona alocação", item: "realloc" },
+  { alvo: "Libera memória alocada", item: "free" },
+  { alvo: "Memória nunca liberada", item: "Memory Leak" },
+  { alvo: "Usar ponteiro após free", item: "Use After Free" }
+];
+    DragDrop.criar('dragdrop-container', dragdropData, 8);
+</script>
+</body>
+</html>

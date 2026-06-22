@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Capítulo 7 — Pilha (Stack) | Processador Desmistificado</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <style>
+    :root { --cap-primary: #ec4899; --cap-secondary: #f472b6; }
+    .chapter-header { position: relative; padding: 6rem 0 3rem; overflow: hidden; }
+    .chapter-header::before { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, #ec489920, #f472b610); }
+    .chapter-header::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, #ec489960, transparent); }
+    .chapter-header-content { position: relative; z-index: 1; }
+    .chapter-badge { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.4rem 1rem; background: #ec489920; border: 1px solid #ec489940; border-radius: 100px; font-size: 0.85rem; color: #ec4899; margin-bottom: 1rem; }
+    .chapter-title { font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 800; margin-bottom: 1rem; background: linear-gradient(135deg, #ec4899, #f472b6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .chapter-desc { font-size: 1.1rem; color: var(--text-secondary); max-width: 700px; }
+    .chapter-nav { position: fixed; top: 0; left: 0; right: 0; z-index: 1000; padding: 0.75rem 1.5rem; display: flex; justify-content: space-between; align-items: center; background: var(--glass); backdrop-filter: blur(20px); border-bottom: 1px solid var(--glass-border); }
+    .chapter-nav-back { display: flex; align-items: center; gap: 0.5rem; color: var(--text-secondary); font-size: 0.9rem; text-decoration: none; transition: var(--transition); }
+    .chapter-nav-back:hover { color: var(--text-primary); }
+    .chapter-nav-actions { display: flex; align-items: center; gap: 0.5rem; }
+    .chapter-nav-btn { padding: 0.4rem 0.8rem; border-radius: var(--radius-sm); background: var(--bg-elevated); border: 1px solid var(--glass-border); color: var(--text-secondary); cursor: pointer; transition: var(--transition); font-size: 0.85rem; }
+    .chapter-nav-btn:hover { background: var(--cap-primary); color: white; border-color: var(--cap-primary); }
+    .chapter-content { padding: 3rem 0; }
+    .content-section { margin-bottom: 3rem; }
+    .content-section h2 { font-size: 1.5rem; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 2px solid #ec489930; display: flex; align-items: center; gap: 0.75rem; }
+    .content-section h3 { font-size: 1.2rem; margin: 1.5rem 0 0.75rem; color: var(--cap-primary); }
+    .content-section p { margin-bottom: 1rem; line-height: 1.8; }
+    .content-section ul { margin-left: 1.5rem; margin-bottom: 1rem; }
+    .content-section li { margin-bottom: 0.5rem; color: var(--text-secondary); }
+    .diagram { background: var(--bg-card); border-radius: var(--radius-lg); padding: 2rem; margin: 1.5rem 0; border: 1px solid var(--glass-border); overflow-x: auto; }
+    .diagram-title { text-align: center; font-weight: 600; margin-bottom: 1.5rem; color: var(--cap-primary); }
+    .diagram-box { display: inline-block; padding: 1rem 1.5rem; background: linear-gradient(135deg, #ec489920, #f472b610); border: 2px solid #ec489940; border-radius: var(--radius-md); text-align: center; font-weight: 600; margin: 0.5rem; min-width: 120px; }
+    .diagram-arrow { display: inline-flex; align-items: center; justify-content: center; color: var(--cap-primary); font-size: 1.5rem; margin: 0 0.5rem; }
+    .diagram-row { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 0.5rem; margin: 0.5rem 0; }
+    .diagram-container { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; }
+    .diagram-layer { width: 100%; max-width: 500px; padding: 1rem; border-radius: var(--radius-md); text-align: center; font-weight: 600; position: relative; }
+    .diagram-layer::after { content: '↓'; position: absolute; bottom: -20px; left: 50%; transform: translateX(-50%); color: var(--text-muted); font-size: 1.2rem; }
+    .diagram-layer:last-child::after { display: none; }
+    .info-box { background: linear-gradient(135deg, #ec489910, #f472b605); border-left: 4px solid var(--cap-primary); border-radius: 0 var(--radius-md) var(--radius-md) 0; padding: 1.25rem; margin: 1.5rem 0; }
+    .info-box-title { font-weight: 700; color: var(--cap-primary); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; }
+    .curiosity-box { background: linear-gradient(135deg, rgba(245,158,11,0.1), rgba(245,158,11,0.05)); border-left: 4px solid #f59e0b; border-radius: 0 var(--radius-md) var(--radius-md) 0; padding: 1.25rem; margin: 1.5rem 0; }
+    .curiosity-box-title { font-weight: 700; color: #f59e0b; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; }
+    .warning-box { background: linear-gradient(135deg, rgba(239,68,68,0.1), rgba(239,68,68,0.05)); border-left: 4px solid #ef4444; border-radius: 0 var(--radius-md) var(--radius-md) 0; padding: 1.25rem; margin: 1.5rem 0; }
+    .warning-box-title { font-weight: 700; color: #ef4444; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; }
+    .quiz-section { background: linear-gradient(180deg, var(--bg-card), var(--bg-main)); padding: 3rem 0; border-top: 1px solid var(--glass-border); }
+    .quiz-section h2 { text-align: center; margin-bottom: 2rem; }
+    .flashcards-section { padding: 3rem 0; background: var(--bg-card); border-top: 1px solid var(--glass-border); }
+    .flashcards-section h2 { text-align: center; margin-bottom: 2rem; }
+    .dragdrop-section { padding: 3rem 0; background: linear-gradient(180deg, var(--bg-main), var(--bg-card)); border-top: 1px solid var(--glass-border); }
+    .dragdrop-section h2 { text-align: center; margin-bottom: 2rem; }
+    .complete-section { padding: 3rem 0; text-align: center; }
+    .complete-btn { padding: 1rem 2.5rem; font-size: 1.1rem; }
+    .chapter-footer-nav { display: flex; justify-content: space-between; align-items: center; padding: 2rem 0; border-top: 1px solid var(--glass-border); margin-top: 3rem; }
+    .chapter-footer-nav a { display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.5rem; background: var(--bg-card); border: 1px solid var(--glass-border); border-radius: var(--radius-md); color: var(--text-secondary); text-decoration: none; transition: var(--transition); }
+    .chapter-footer-nav a:hover { background: var(--cap-primary); color: white; border-color: var(--cap-primary); }
+    .footer { padding: 3rem 0; border-top: 1px solid var(--glass-border); text-align: center; }
+    .footer p { color: var(--text-muted); font-size: 0.9rem; }
+    @media (max-width: 768px) { .chapter-header { padding: 5rem 0 2rem; } .chapter-footer-nav { flex-direction: column; gap: 1rem; } .chapter-footer-nav a { width: 100%; justify-content: center; } }
+  </style>
+</head>
+<body>
+  <nav class="chapter-nav">
+    <a href="../index.html" class="chapter-nav-back"><span>←</span><span>Voltar ao Início</span></a>
+    <div class="chapter-nav-actions">
+      <button class="chapter-nav-btn" onclick="PainelPersonalizacao.abrir()">⚙️ Personalizar</button>
+      <button class="chapter-nav-btn" onclick="Progresso.concluirCapitulo(7); this.textContent='✅ Concluído'; this.disabled=true; Progresso.notificar('🎉 Capítulo 7 concluído! +100 XP');">✓ Marcar Concluído</button>
+    </div>
+  </nav>
+  <header class="chapter-header">
+    <div class="container chapter-header-content">
+      <div class="chapter-badge"><span>🩷</span><span>Capítulo 07</span></div>
+      <h1 class="chapter-title">Pilha (Stack)</h1>
+      <p class="chapter-desc">🩷 Pilha (Stack) — parte essencial da jornada para compreender o funcionamento interno do processador.</p>
+    </div>
+  </header>
+  <main class="chapter-content"><div class="container">
+<div class="content-section">
+  <h2>📚 O Que é Stack (Pilha)?</h2>
+  <p>A Stack é uma região da memória RAM organizada como uma pilha de pratos: o último a entrar é o primeiro a sair (LIFO — Last In, First Out). A CPU usa a stack para gerenciar chamadas de função, variáveis locais e endereços de retorno.</p>
+
+  <div class="diagram">
+    <div class="diagram-title">🍽️ Analogia da Pilha de Pratos</div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:0.5rem;max-width:300px;margin:0 auto">
+      <div class="diagram-box" style="width:100%;background:linear-gradient(135deg,#ef444420,#b91c1c10);border-color:#ef444440">
+        🥏 Topo da Pilha (último push)
+      </div>
+      <div class="diagram-box" style="width:100%;background:linear-gradient(135deg,#f9731620,#c2410c10);border-color:#f9731640">
+        🥏 Prato do meio
+      </div>
+      <div class="diagram-box" style="width:100%;background:linear-gradient(135deg,#eab30820,#a1620710);border-color:#eab30840">
+        🥏 Prato do meio
+      </div>
+      <div class="diagram-box" style="width:100%;background:linear-gradient(135deg,#22c55e20,#15803d10);border-color:#22c55e40">
+        🥏 Fundo da Pilha (primeiro push)
+      </div>
+    </div>
+    <p style="text-align:center;margin-top:1rem;color:var(--text-muted)">↑ PUSH (empilha) | POP (desempilha) ↓</p>
+  </div>
+
+  <div class="info-box">
+    <div class="info-box-title">💡 Por que LIFO?</div>
+    <p>Quando uma função chama outra, a função chamada DEVE terminar antes da chamadora continuar. A pilha garante que o retorno aconteça na ordem correta — a última função chamada é a primeira a retornar.</p>
+  </div>
+</div>
+
+<div class="content-section">
+  <h2>⬆️⬇️ Push e Pop</h2>
+  <p>Duas operações fundamentais manipulam a stack:</p>
+  <ul>
+    <li><strong>PUSH:</strong> Coloca um valor no topo da pilha. O RSP (Stack Pointer) diminui (a pilha cresce para BAIXO na memória).</li>
+    <li><strong>POP:</strong> Remove o valor do topo da pilha. O RSP aumenta.</li>
+  </ul>
+
+  <pre><code>// Em Assembly x86_64:
+push rax      // Guarda o valor de RAX na pilha
+              // RSP = RSP - 8 (64-bit)
+              // [RSP] = valor de RAX
+
+pop rbx       // Recupera o valor do topo para RBX
+              // RBX = [RSP]
+              // RSP = RSP + 8</code></pre>
+
+  <div class="diagram">
+    <div class="diagram-title">📊 Estado da Pilha</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;max-width:500px;margin:0 auto">
+      <div>
+        <p style="text-align:center;font-weight:600;margin-bottom:0.5rem">Antes do PUSH</p>
+        <div style="display:flex;flex-direction:column;gap:0.25rem;font-family:var(--font-mono);font-size:0.8rem">
+          <div style="background:var(--bg-elevated);padding:0.5rem;border-radius:4px;text-align:center">0x7FFF...F0: ???</div>
+          <div style="background:var(--bg-elevated);padding:0.5rem;border-radius:4px;text-align:center">0x7FFF...F8: ???</div>
+          <div style="background:#ef444420;padding:0.5rem;border-radius:4px;text-align:center;border:1px solid #ef444440">← RSP aponta aqui</div>
+        </div>
+      </div>
+      <div>
+        <p style="text-align:center;font-weight:600;margin-bottom:0.5rem">Depois do PUSH RAX</p>
+        <div style="display:flex;flex-direction:column;gap:0.25rem;font-family:var(--font-mono);font-size:0.8rem">
+          <div style="background:var(--bg-elevated);padding:0.5rem;border-radius:4px;text-align:center">0x7FFF...F0: ???</div>
+          <div style="background:#22c55e20;padding:0.5rem;border-radius:4px;text-align:center;border:1px solid #22c55e40">0x7FFF...F8: valor RAX</div>
+          <div style="background:#ef444420;padding:0.5rem;border-radius:4px;text-align:center;border:1px solid #ef444440">← RSP aponta aqui</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="content-section">
+  <h2>📞 Chamadas de Função e Stack Frame</h2>
+  <p>Quando uma função é chamada, a CPU cria um <strong>Stack Frame</strong> — uma "caixa" na pilha com tudo que a função precisa:</p>
+  <ul>
+    <li><strong>Endereço de retorno:</strong> Para onde voltar quando a função terminar</li>
+    <li><strong>Parâmetros:</strong> Argumentos passados para a função</li>
+    <li><strong>Variáveis locais:</strong> Dados temporários da função</li>
+    <li><strong>RBP salvo:</strong> O valor anterior do Base Pointer</li>
+  </ul>
+
+  <pre><code>// Código C:
+void func(int a, int b) {
+    int local = a + b;  // Variável local na stack
+    printf("%d", local);
+}
+
+// Assembly equivalente (simplificado):
+func:
+    push rbp            // Salva o RBP anterior
+    mov rbp, rsp        // RBP = topo atual (novo frame)
+    sub rsp, 16         // Reserva espaço para variáveis locais
+
+    // a está em [rbp+16], b em [rbp+24]
+    // local está em [rbp-4]
+
+    mov eax, [rbp+16]   // eax = a
+    add eax, [rbp+24]   // eax += b
+    mov [rbp-4], eax    // local = eax
+
+    // ... chama printf ...
+
+    mov rsp, rbp        // Restaura o topo da pilha
+    pop rbp             // Restaura o RBP anterior
+    ret                 // Retorna (usa endereço salvo)</code></pre>
+
+  <div class="diagram">
+    <div class="diagram-title">🏗️ Estrutura de um Stack Frame</div>
+    <div style="display:flex;flex-direction:column;gap:0.25rem;max-width:400px;margin:0 auto;font-family:var(--font-mono);font-size:0.8rem">
+      <div style="background:#ef444420;padding:0.6rem;border-radius:4px;border:1px solid #ef444440;text-align:center">
+        <strong>Endereço de Retorno</strong><br><small>Para onde voltar</small>
+      </div>
+      <div style="background:#f9731620;padding:0.6rem;border-radius:4px;border:1px solid #f9731640;text-align:center">
+        <strong>RBP Anterior (salvo)</strong><br><small>Base do frame anterior</small>
+      </div>
+      <div style="background:#22c55e20;padding:0.6rem;border-radius:4px;border:1px solid #22c55e40;text-align:center">
+        <strong>Variáveis Locais</strong><br><small>[rbp-4], [rbp-8]...</small>
+      </div>
+      <div style="background:#3b82f620;padding:0.6rem;border-radius:4px;border:1px solid #3b82f640;text-align:center">
+        <strong>Espaço Reservado</strong><br><small>Alinhamento, temporários</small>
+      </div>
+      <div style="background:#a855f720;padding:0.6rem;border-radius:4px;border:1px solid #a855f740;text-align:center">
+        <strong>← RSP aponta aqui (topo)</strong>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="content-section">
+  <h2>⚠️ Stack Overflow</h2>
+  <p>A stack tem tamanho LIMITADO (geralmente 8 MB em Linux). Se uma função chamar a si mesma infinitamente ou alocar muitas variáveis locais, a stack "transborda":</p>
+
+  <pre><code>// CUIDADO! Stack Overflow:
+void recursao_infinita() {
+    int buffer[1000];        // Aloca na stack
+    recursao_infinita();     // Chama a si mesma → stack cresce!
+}
+
+// Cada chamada adiciona um novo frame na pilha
+// Eventualmente: STACK OVERFLOW! 💥
+
+// Solução: use o heap para grandes alocações
+void correto() {
+    int *buffer = malloc(1000 * sizeof(int));  // Heap!
+    // ... usa buffer ...
+    free(buffer);
+}</code></pre>
+
+  <div class="warning-box">
+    <div class="warning-box-title">⚠️ Boas Práticas</div>
+    <p>Nunca aloque arrays grandes na stack! Use <code>malloc</code> (heap) para buffers maiores que alguns KB. A stack é para dados pequenos e temporários.</p>
+  </div>
+</div>
+
+<div class="content-section">
+  <h2>🗺️ Resumo Visual</h2>
+  <div class="diagram">
+    <div class="diagram-title">🧩 Mapa Mental — Stack</div>
+    <div class="diagram-row">
+      <div class="diagram-box" style="min-width:200px">
+        <strong>📚 Stack</strong><br>
+        <small style="color:var(--text-muted)">
+        ├─ LIFO (último entra, primeiro sai)<br>
+        ├─ Cresce para BAIXO<br>
+        ├─ RSP aponta o topo<br>
+        └─ RBP aponta a base do frame
+        </small>
+      </div>
+      <span class="diagram-arrow">+</span>
+      <div class="diagram-box" style="min-width:200px">
+        <strong>📞 Funções</strong><br>
+        <small style="color:var(--text-muted)">
+        ├─ Push endereço de retorno<br>
+        ├─ Cria stack frame<br>
+        ├─ Variáveis locais<br>
+        └─ Pop ao retornar
+        </small>
+      </div>
+    </div>
+  </div>
+</div>
+</div></main>
+  <section class="quiz-section" id="quiz"><div class="container"><h2>🧠 Quiz do Capítulo 7</h2><div id="quiz-container"></div></div></section>
+  <section class="flashcards-section" id="flashcards"><div class="container"><h2>🎴 Flashcards</h2><div id="flashcards-container"></div></div></section>
+  <section class="dragdrop-section" id="dragdrop"><div class="container"><h2>🎯 Desafio: Arraste e Solte</h2><div id="dragdrop-container"></div></div></section>
+  <section class="complete-section"><div class="container"><h2>🎉 Parabéns por chegar até aqui!</h2><p class="mb-3">Você completou o conteúdo do Capítulo 7. Não se esqueça de marcar como concluído!</p><button class="btn btn-primary complete-btn" onclick="Progresso.concluirCapitulo(7); Progresso.notificar('🎉 Capítulo 7 concluído! +100 XP'); this.textContent='✅ Concluído'; this.disabled=true;">✓ Marcar Capítulo 7 como Concluído</button></div></section>
+  <div class="container"><div class="chapter-footer-nav"><a href="cap6.html">← Capítulo Anterior</a><a href="cap8.html">Próximo Capítulo →</a></div></div>
+  <footer class="footer"><div class="container"><p>Processador Desmistificado &copy; 2026</p></div></footer>
+  <script src="../js/main.js"></script>
+  <script>
+    const quizPerguntas = [
+  {
+    pergunta: "O que significa LIFO?",
+    opcoes: ["Last In, First Out", "Last In, First Over", "Load In, Fetch Out", "Local In, Function Out"],
+    correta: 0
+  },
+  {
+    pergunta: "Qual registrador aponta para o TOPO da pilha?",
+    opcoes: ["RBP", "RAX", "RSP", "RIP"],
+    correta: 2
+  },
+  {
+    pergunta: "O que acontece durante um PUSH?",
+    opcoes: ["RSP aumenta", "RSP diminui", "RBP aumenta", "Nada muda"],
+    correta: 1
+  },
+  {
+    pergunta: "O que é um Stack Frame?",
+    opcoes: ["Um tipo de cache", "A 'caixa' na pilha com dados de uma função", "Um registrador especial", "Uma instrução de máquina"],
+    correta: 1
+  },
+  {
+    pergunta: "Por que usar malloc em vez de arrays grandes na stack?",
+    opcoes: ["malloc é mais rápido", "A stack tem tamanho limitado", "A stack não aceita arrays", "malloc é mais seguro"],
+    correta: 1
+  }
+];
+    Quiz.criar('quiz-container', quizPerguntas, 7);
+
+    const flashcardsData = [
+  { frente: "O que é Stack (Pilha)?", verso: "Região da memória RAM organizada como LIFO (Last In, First Out). Usada para chamadas de função, variáveis locais e endereços de retorno." },
+  { frente: "O que faz a instrução PUSH?", verso: "Coloca um valor no topo da pilha. O RSP diminui (a pilha cresce para baixo na memória)." },
+  { frente: "O que faz a instrução POP?", verso: "Remove o valor do topo da pilha. O RSP aumenta." },
+  { frente: "O que é um Stack Frame?", verso: "Uma 'caixa' na pilha criada para cada chamada de função, contendo endereço de retorno, parâmetros e variáveis locais." },
+  { frente: "O que é Stack Overflow?", verso: "Quando a pilha excede seu tamanho limite, geralmente por recursão infinita ou alocação excessiva na stack." },
+  { frente: "Qual a diferença entre Stack e Heap?", verso: "Stack: automática, rápida, limitada, para dados temporários. Heap: manual (malloc/free), maior, para dados dinâmicos." }
+];
+    Flashcards.criar('flashcards-container', flashcardsData);
+
+    const dragdropData = [
+  { alvo: "Coloca valor no topo", item: "PUSH" },
+  { alvo: "Remove valor do topo", item: "POP" },
+  { alvo: "Aponta para o topo", item: "RSP" },
+  { alvo: "Aponta para base do frame", item: "RBP" },
+  { alvo: "Caixa de dados de uma função", item: "Stack Frame" },
+  { alvo: "Pilha transborda", item: "Stack Overflow" }
+];
+    DragDrop.criar('dragdrop-container', dragdropData, 7);
+</script>
+</body>
+</html>

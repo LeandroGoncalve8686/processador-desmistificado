@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Capítulo 3 — Como um Programa é Executado | Processador Desmistificado</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <style>
+    /* ===== TEMA DO CAPITULO 3 ===== */
+    :root {
+      --cap-primary: #a855f7;
+      --cap-secondary: #c084fc;
+    }
+
+    .chapter-header {
+      position: relative;
+      padding: 6rem 0 3rem;
+      overflow: hidden;
+    }
+    .chapter-header::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, #a855f720, #c084fc10);
+    }
+    .chapter-header::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, #a855f760, transparent);
+    }
+    .chapter-header-content {
+      position: relative;
+      z-index: 1;
+    }
+    .chapter-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.4rem 1rem;
+      background: #a855f720;
+      border: 1px solid #a855f740;
+      border-radius: 100px;
+      font-size: 0.85rem;
+      color: #a855f7;
+      margin-bottom: 1rem;
+    }
+    .chapter-title {
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      font-weight: 800;
+      margin-bottom: 1rem;
+      background: linear-gradient(135deg, #a855f7, #c084fc);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .chapter-desc {
+      font-size: 1.1rem;
+      color: var(--text-secondary);
+      max-width: 700px;
+    }
+
+    /* ===== NAVBAR DO CAPITULO ===== */
+    .chapter-nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 1000;
+      padding: 0.75rem 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--glass);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--glass-border);
+    }
+    .chapter-nav-back {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      text-decoration: none;
+      transition: var(--transition);
+    }
+    .chapter-nav-back:hover {
+      color: var(--text-primary);
+    }
+    .chapter-nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .chapter-nav-btn {
+      padding: 0.4rem 0.8rem;
+      border-radius: var(--radius-sm);
+      background: var(--bg-elevated);
+      border: 1px solid var(--glass-border);
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: var(--transition);
+      font-size: 0.85rem;
+    }
+    .chapter-nav-btn:hover {
+      background: var(--cap-primary);
+      color: white;
+      border-color: var(--cap-primary);
+    }
+
+    /* ===== CONTEUDO ===== */
+    .chapter-content {
+      padding: 3rem 0;
+    }
+    .content-section {
+      margin-bottom: 3rem;
+    }
+    .content-section h2 {
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid #a855f730;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .content-section h3 {
+      font-size: 1.2rem;
+      margin: 1.5rem 0 0.75rem;
+      color: var(--cap-primary);
+    }
+    .content-section p {
+      margin-bottom: 1rem;
+      line-height: 1.8;
+    }
+    .content-section ul {
+      margin-left: 1.5rem;
+      margin-bottom: 1rem;
+    }
+    .content-section li {
+      margin-bottom: 0.5rem;
+      color: var(--text-secondary);
+    }
+
+    /* ===== DIAGRAMAS ===== */
+    .diagram {
+      background: var(--bg-card);
+      border-radius: var(--radius-lg);
+      padding: 2rem;
+      margin: 1.5rem 0;
+      border: 1px solid var(--glass-border);
+      overflow-x: auto;
+    }
+    .diagram-title {
+      text-align: center;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+      color: var(--cap-primary);
+    }
+    .diagram-box {
+      display: inline-block;
+      padding: 1rem 1.5rem;
+      background: linear-gradient(135deg, #a855f720, #c084fc10);
+      border: 2px solid #a855f740;
+      border-radius: var(--radius-md);
+      text-align: center;
+      font-weight: 600;
+      margin: 0.5rem;
+      min-width: 120px;
+    }
+    .diagram-arrow {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--cap-primary);
+      font-size: 1.5rem;
+      margin: 0 0.5rem;
+    }
+    .diagram-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin: 0.5rem 0;
+    }
+    .diagram-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .diagram-layer {
+      width: 100%;
+      max-width: 500px;
+      padding: 1rem;
+      border-radius: var(--radius-md);
+      text-align: center;
+      font-weight: 600;
+      position: relative;
+    }
+    .diagram-layer::after {
+      content: '↓';
+      position: absolute;
+      bottom: -20px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: var(--text-muted);
+      font-size: 1.2rem;
+    }
+    .diagram-layer:last-child::after {
+      display: none;
+    }
+
+    /* ===== CAIXAS ESPECIAIS ===== */
+    .info-box {
+      background: linear-gradient(135deg, #a855f710, #c084fc05);
+      border-left: 4px solid var(--cap-primary);
+      border-radius: 0 var(--radius-md) var(--radius-md) 0;
+      padding: 1.25rem;
+      margin: 1.5rem 0;
+    }
+    .info-box-title {
+      font-weight: 700;
+      color: var(--cap-primary);
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .curiosity-box {
+      background: linear-gradient(135deg, rgba(245,158,11,0.1), rgba(245,158,11,0.05));
+      border-left: 4px solid #f59e0b;
+      border-radius: 0 var(--radius-md) var(--radius-md) 0;
+      padding: 1.25rem;
+      margin: 1.5rem 0;
+    }
+    .curiosity-box-title {
+      font-weight: 700;
+      color: #f59e0b;
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .warning-box {
+      background: linear-gradient(135deg, rgba(239,68,68,0.1), rgba(239,68,68,0.05));
+      border-left: 4px solid #ef4444;
+      border-radius: 0 var(--radius-md) var(--radius-md) 0;
+      padding: 1.25rem;
+      margin: 1.5rem 0;
+    }
+    .warning-box-title {
+      font-weight: 700;
+      color: #ef4444;
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    /* ===== QUIZ SECTION ===== */
+    .quiz-section {
+      background: linear-gradient(180deg, var(--bg-card), var(--bg-main));
+      padding: 3rem 0;
+      border-top: 1px solid var(--glass-border);
+    }
+    .quiz-section h2 {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    /* ===== FLASHCARDS SECTION ===== */
+    .flashcards-section {
+      padding: 3rem 0;
+      background: var(--bg-card);
+      border-top: 1px solid var(--glass-border);
+    }
+    .flashcards-section h2 {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    /* ===== DRAGDROP SECTION ===== */
+    .dragdrop-section {
+      padding: 3rem 0;
+      background: linear-gradient(180deg, var(--bg-main), var(--bg-card));
+      border-top: 1px solid var(--glass-border);
+    }
+    .dragdrop-section h2 {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    /* ===== COMPLETE SECTION ===== */
+    .complete-section {
+      padding: 3rem 0;
+      text-align: center;
+    }
+    .complete-btn {
+      padding: 1rem 2.5rem;
+      font-size: 1.1rem;
+    }
+
+    /* ===== FOOTER NAV ===== */
+    .chapter-footer-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 2rem 0;
+      border-top: 1px solid var(--glass-border);
+      margin-top: 3rem;
+    }
+    .chapter-footer-nav a {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.5rem;
+      background: var(--bg-card);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-md);
+      color: var(--text-secondary);
+      text-decoration: none;
+      transition: var(--transition);
+    }
+    .chapter-footer-nav a:hover {
+      background: var(--cap-primary);
+      color: white;
+      border-color: var(--cap-primary);
+    }
+
+    @media (max-width: 768px) {
+      .chapter-header { padding: 5rem 0 2rem; }
+      .chapter-footer-nav { flex-direction: column; gap: 1rem; }
+      .chapter-footer-nav a { width: 100%; justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+  <!-- ALTERE AQUI A NAVBAR DO CAPITULO -->
+  <nav class="chapter-nav">
+    <a href="../index.html" class="chapter-nav-back">
+      <span>←</span>
+      <span>Voltar ao Início</span>
+    </a>
+    <div class="chapter-nav-actions">
+      <button class="chapter-nav-btn" onclick="PainelPersonalizacao.abrir()">⚙️ Personalizar</button>
+      <button class="chapter-nav-btn" onclick="Progresso.concluirCapitulo(3); this.textContent='✅ Concluído'; this.disabled=true; Progresso.notificar('🎉 Capítulo 3 concluído! +100 XP');">✓ Marcar Concluído</button>
+    </div>
+  </nav>
+
+  <!-- HEADER DO CAPITULO -->
+  <header class="chapter-header">
+    <div class="container chapter-header-content">
+      <div class="chapter-badge">
+        <span>🟣</span>
+        <span>Capítulo 03</span>
+      </div>
+      <h1 class="chapter-title">Como um Programa é Executado</h1>
+      <p class="chapter-desc">🟣 Como um Programa é Executado — parte essencial da jornada para compreender o funcionamento interno do processador.</p>
+    </div>
+  </header>
+
+  <!-- CONTEUDO PRINCIPAL -->
+  <main class="chapter-content">
+    <div class="container">
+      
+<div class="content-section">
+  <h2>🔄 O Ciclo Fetch-Decode-Execute</h2>
+  <p>Todo programa que você escreve em C, Python ou JavaScript precisa passar por uma transformação extraordinária antes de chegar à CPU. Vamos acompanhar essa jornada passo a passo.</p>
+
+  <div class="diagram">
+    <div class="diagram-title">🛤️ Jornada do Código até a CPU</div>
+    <div style="display:flex;flex-direction:column;gap:0.75rem;max-width:600px;margin:0 auto">
+      <div class="diagram-box" style="width:100%;background:linear-gradient(135deg,#3b82f620,#1d4ed810);border-color:#3b82f640">
+        📝 Código em C<br>
+        <small style="color:var(--text-muted)">int x = 10; printf("%d", x);</small>
+      </div>
+      <div class="diagram-box" style="width:100%;background:linear-gradient(135deg,#a855f720,#7c3aed10);border-color:#a855f740">
+        ⚙️ Compilador (gcc/clang)<br>
+        <small style="color:var(--text-muted)">Traduz para linguagem intermediária</small>
+      </div>
+      <div class="diagram-box" style="width:100%;background:linear-gradient(135deg,#f9731620,#c2410c10);border-color:#f9731640">
+        🔧 Assembly (x86_64)<br>
+        <small style="color:var(--text-muted)">mov eax, 10 | call printf</small>
+      </div>
+      <div class="diagram-box" style="width:100%;background:linear-gradient(135deg,#22c55e20,#15803d10);border-color:#22c55e40">
+        💻 Código de Máquina (Binário)<br>
+        <small style="color:var(--text-muted)">10110000 00001010 00000000...</small>
+      </div>
+      <div class="diagram-box" style="width:100%;background:linear-gradient(135deg,#ef444420,#b91c1c10);border-color:#ef444440">
+        🧠 CPU Executa<br>
+        <small style="color:var(--text-muted)">Fetch → Decode → Execute (repete)</small>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="content-section">
+  <h2>📥 Fetch — Buscando a Instrução</h2>
+  <p>A CPU usa um registrador especial chamado <strong>RIP</strong> (Instruction Pointer) para saber qual instrução buscar na memória:</p>
+  <ul>
+    <li>O RIP contém o ENDEREÇO da próxima instrução na RAM</li>
+    <li>A CPU lê esse endereço e busca a instrução na memória</li>
+    <li>A instrução é copiada para dentro da CPU</li>
+    <li>O RIP é automaticamente incrementado para apontar para a próxima instrução</li>
+  </ul>
+
+  <pre><code>// Em Assembly x86_64, o RIP aponta para:
+0x401000:  mov eax, 10      // RIP aponta aqui → FETCH
+0x401005:  add eax, 5       // Próxima instrução
+0x40100A:  mov [rbp-4], eax // Próxima instrução</code></pre>
+
+  <div class="info-box">
+    <div class="info-box-title">💡 Analogia</div>
+    <p>O Fetch é como um aluno pegando a próxima página do livro para ler. O RIP é o marcador de página que diz "comece daqui".</p>
+  </div>
+</div>
+
+<div class="content-section">
+  <h2>🔍 Decode — Decodificando a Instrução</h2>
+  <p>A instrução buscada é apenas uma sequência de bits (0s e 1s). A CPU precisa entender o que fazer:</p>
+  <ul>
+    <li><strong>Opcode:</strong> Os primeiros bits dizem QUAL operação (soma, subtração, movimento, etc.)</li>
+    <li><strong>Operandos:</strong> Os bits seguintes dizem COM QUAIS dados operar (registradores, memória, valores imediatos)</li>
+    <li>A Unidade de Controle (CU) interpreta tudo isso e prepara a ALU/FPU para a ação</li>
+  </ul>
+
+  <div class="diagram">
+    <div class="diagram-title">🔢 Exemplo de Decodificação</div>
+    <div class="diagram-row">
+      <div class="diagram-box">
+        <strong>10110000</strong><br>
+        <small>Opcode: MOV</small>
+      </div>
+      <span class="diagram-arrow">+</span>
+      <div class="diagram-box">
+        <strong>00001010</strong><br>
+        <small>Operando: 10</small>
+      </div>
+      <span class="diagram-arrow">=</span>
+      <div class="diagram-box" style="background:linear-gradient(135deg,#22c55e20,#15803d10);border-color:#22c55e40">
+        <strong>MOV EAX, 10</strong><br>
+        <small>"Mova o valor 10 para o registrador EAX"</small>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="content-section">
+  <h2>⚙️ Execute — Executando a Operação</h2>
+  <p>Agora a CPU sabe EXATAMENTE o que fazer:</p>
+  <ul>
+    <li>Se for uma operação aritmética → ALU executa</li>
+    <li>Se for um número decimal → FPU executa</li>
+    <li>Se for acessar memória → Barramento de endereços é usado</li>
+    <li>Se for um salto (jump) → RIP é alterado para um novo endereço</li>
+  </ul>
+
+  <pre><code>// Exemplo completo em C e Assembly:
+
+// Código C:
+int main() {
+    int a = 10;      // mov DWORD PTR [rbp-4], 10
+    int b = 20;      // mov DWORD PTR [rbp-8], 20
+    int c = a + b;   // mov eax, [rbp-4]
+                     // add eax, [rbp-8]
+                     // mov [rbp-12], eax
+    return 0;        // mov eax, 0
+}</code></pre>
+
+  <div class="curiosity-box">
+    <div class="curiosity-box-title">🤔 Curiosidade</div>
+    <p>Um processador moderno de 3 GHz pode executar o ciclo Fetch-Decode-Execute <strong>3 bilhões de vezes por segundo</strong> em CADA núcleo! Um programa simples como o acima leva nanossegundos para executar.</p>
+  </div>
+</div>
+
+<div class="content-section">
+  <h2>📐 Pipeline — Execução Paralela Dentro da CPU</h2>
+  <p>CPUs modernas não esperam uma instrução terminar para começar a próxima. Elas usam <strong>pipeline</strong>:</p>
+
+  <div class="diagram">
+    <div class="diagram-title">🚰 Pipeline de 5 Estágios</div>
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:0.5rem;max-width:700px;margin:0 auto;font-size:0.8rem">
+      <div class="diagram-box" style="padding:0.5rem"><strong>IF</strong><br>Fetch</div>
+      <div class="diagram-box" style="padding:0.5rem"><strong>ID</strong><br>Decode</div>
+      <div class="diagram-box" style="padding:0.5rem"><strong>EX</strong><br>Execute</div>
+      <div class="diagram-box" style="padding:0.5rem"><strong>MEM</strong><br>Memory</div>
+      <div class="diagram-box" style="padding:0.5rem"><strong>WB</strong><br>Write Back</div>
+    </div>
+    <div style="margin-top:1rem;font-family:var(--font-mono);font-size:0.8rem;text-align:center;color:var(--text-muted)">
+      Ciclo 1: IF(1) | - | - | - | -<br>
+      Ciclo 2: IF(2) | ID(1) | - | - | -<br>
+      Ciclo 3: IF(3) | ID(2) | EX(1) | - | -<br>
+      Ciclo 4: IF(4) | ID(3) | EX(2) | MEM(1) | -<br>
+      Ciclo 5: IF(5) | ID(4) | EX(3) | MEM(2) | WB(1)<br>
+      <span style="color:var(--primary-light)">→ 5 instruções em andamento simultaneamente!</span>
+    </div>
+  </div>
+
+  <div class="warning-box">
+    <div class="warning-box-title">⚠️ Pipeline Hazards</div>
+    <p>Quando uma instrução depende do resultado da anterior, o pipeline precisa esperar. Isso é chamado de <strong>data hazard</strong> e reduz a performance. Compiladores otimizam o código para minimizar esses casos.</p>
+  </div>
+</div>
+
+<div class="content-section">
+  <h2>🗺️ Resumo Visual</h2>
+  <div class="diagram">
+    <div class="diagram-title">🧩 Mapa Mental — Execução de Programas</div>
+    <div class="diagram-row">
+      <div class="diagram-box" style="min-width:180px">
+        <strong>📝 Código C</strong><br>
+        <small style="color:var(--text-muted)">
+        └─ Compilador<br>
+        &nbsp;&nbsp;&nbsp;└─ Assembly
+        </small>
+      </div>
+      <span class="diagram-arrow">→</span>
+      <div class="diagram-box" style="min-width:180px">
+        <strong>💻 Binário</strong><br>
+        <small style="color:var(--text-muted)">
+        └─ Carregado na RAM<br>
+        &nbsp;&nbsp;&nbsp;└─ RIP aponta
+        </small>
+      </div>
+      <span class="diagram-arrow">→</span>
+      <div class="diagram-box" style="min-width:180px">
+        <strong>🧠 CPU</strong><br>
+        <small style="color:var(--text-muted)">
+        ├─ Fetch<br>
+        ├─ Decode<br>
+        └─ Execute
+        </small>
+      </div>
+    </div>
+  </div>
+</div>
+
+    </div>
+  </main>
+
+  <!-- QUIZ -->
+  <section class="quiz-section" id="quiz">
+    <div class="container">
+      <h2>🧠 Quiz do Capítulo 3</h2>
+      <div id="quiz-container"></div>
+    </div>
+  </section>
+
+  <!-- FLASHCARDS -->
+  <section class="flashcards-section" id="flashcards">
+    <div class="container">
+      <h2>🎴 Flashcards</h2>
+      <div id="flashcards-container"></div>
+    </div>
+  </section>
+
+  <!-- DRAG & DROP -->
+  <section class="dragdrop-section" id="dragdrop">
+    <div class="container">
+      <h2>🎯 Desafio: Arraste e Solte</h2>
+      <div id="dragdrop-container"></div>
+    </div>
+  </section>
+
+  <!-- COMPLETAR -->
+  <section class="complete-section">
+    <div class="container">
+      <h2>🎉 Parabéns por chegar até aqui!</h2>
+      <p class="mb-3">Você completou o conteúdo do Capítulo 3. Não se esqueça de marcar como concluído e testar seus conhecimentos no quiz!</p>
+      <button class="btn btn-primary complete-btn" onclick="Progresso.concluirCapitulo(3); Progresso.notificar('🎉 Capítulo 3 concluído! +100 XP'); this.textContent='✅ Concluído'; this.disabled=true;">
+        ✓ Marcar Capítulo 3 como Concluído
+      </button>
+    </div>
+  </section>
+
+  <!-- NAVEGACAO ENTRE CAPITULOS -->
+  <div class="container">
+    <div class="chapter-footer-nav">
+      <a href="cap2.html">← Capítulo Anterior</a>
+      <a href="cap4.html">Próximo Capítulo →</a>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div class="container">
+      <p>Processador Desmistificado &copy; 2026</p>
+    </div>
+  </footer>
+
+  <script src="../js/main.js"></script>
+  <script>
+    
+    // ===== QUIZ DO CAPITULO 3 =====
+    const quizPerguntas = [
+  {
+    pergunta: "Qual é a primeira etapa do ciclo Fetch-Decode-Execute?",
+    opcoes: ["Execute", "Decode", "Fetch", "Write Back"],
+    correta: 2
+  },
+  {
+    pergunta: "O que o registrador RIP faz?",
+    opcoes: ["Armazena o resultado de cálculos", "Aponta para a próxima instrução", "Controla o clock", "Guarda flags de status"],
+    correta: 1
+  },
+  {
+    pergunta: "Qual linguagem a CPU entende diretamente?",
+    opcoes: ["C", "Python", "Assembly", "Código de máquina (binário)"],
+    correta: 3
+  },
+  {
+    pergunta: "O que é 'pipeline' na CPU?",
+    opcoes: ["Um tipo de cache", "Execução paralela de instruções em estágios", "Um barramento de dados", "Um registrador especial"],
+    correta: 1
+  },
+  {
+    pergunta: "Na etapa Decode, o que a CPU identifica?",
+    opcoes: ["Apenas o opcode", "Apenas os operandos", "Opcode e operandos", "O clock speed"],
+    correta: 2
+  }
+];
+    Quiz.criar('quiz-container', quizPerguntas, 3);
+
+    
+    // ===== FLASHCARDS DO CAPITULO 3 =====
+    const flashcardsData = [
+  { frente: "Quais são as 3 etapas do ciclo básico?", verso: "Fetch (buscar instrução), Decode (decodificar), Execute (executar)." },
+  { frente: "O que é o RIP?", verso: "Instruction Pointer — registrador que aponta para o endereço da próxima instrução a ser executada." },
+  { frente: "O que é um opcode?", verso: "A parte da instrução que indica QUAL operação deve ser executada (soma, movimento, etc.)." },
+  { frente: "Qual a ordem correta: C → Assembly → Binário?", verso: "Sim! O compilador traduz C para Assembly, e o assembler traduz Assembly para código de máquina (binário)." },
+  { frente: "O que é pipeline?", verso: "Técnica onde a CPU processa múltiplas instruções simultaneamente em diferentes estágios (Fetch, Decode, Execute...)." }
+];
+    Flashcards.criar('flashcards-container', flashcardsData);
+
+    
+    // ===== DRAG & DROP DO CAPITULO 3 =====
+    const dragdropData = [
+  { alvo: "Busca instrução na RAM", item: "Fetch" },
+  { alvo: "Interpreta o que fazer", item: "Decode" },
+  { alvo: "Realiza a operação", item: "Execute" },
+  { alvo: "Aponta próxima instrução", item: "RIP" },
+  { alvo: "Executa várias instruções em paralelo", item: "Pipeline" }
+];
+    DragDrop.criar('dragdrop-container', dragdropData, 3);
+
+  </script>
+</body>
+</html>

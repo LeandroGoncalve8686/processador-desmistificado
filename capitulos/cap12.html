@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Capítulo 12 — CPU e Sistema Operacional | Processador Desmistificado</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <style>
+    :root { --cap-primary: #6366f1; --cap-secondary: #818cf8; }
+    .chapter-header { position: relative; padding: 6rem 0 3rem; overflow: hidden; }
+    .chapter-header::before { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, #6366f120, #818cf810); }
+    .chapter-header::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, #6366f160, transparent); }
+    .chapter-header-content { position: relative; z-index: 1; }
+    .chapter-badge { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.4rem 1rem; background: #6366f120; border: 1px solid #6366f140; border-radius: 100px; font-size: 0.85rem; color: #6366f1; margin-bottom: 1rem; }
+    .chapter-title { font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 800; margin-bottom: 1rem; background: linear-gradient(135deg, #6366f1, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .chapter-desc { font-size: 1.1rem; color: var(--text-secondary); max-width: 700px; }
+    .chapter-nav { position: fixed; top: 0; left: 0; right: 0; z-index: 1000; padding: 0.75rem 1.5rem; display: flex; justify-content: space-between; align-items: center; background: var(--glass); backdrop-filter: blur(20px); border-bottom: 1px solid var(--glass-border); }
+    .chapter-nav-back { display: flex; align-items: center; gap: 0.5rem; color: var(--text-secondary); font-size: 0.9rem; text-decoration: none; transition: var(--transition); }
+    .chapter-nav-back:hover { color: var(--text-primary); }
+    .chapter-nav-actions { display: flex; align-items: center; gap: 0.5rem; }
+    .chapter-nav-btn { padding: 0.4rem 0.8rem; border-radius: var(--radius-sm); background: var(--bg-elevated); border: 1px solid var(--glass-border); color: var(--text-secondary); cursor: pointer; transition: var(--transition); font-size: 0.85rem; }
+    .chapter-nav-btn:hover { background: var(--cap-primary); color: white; border-color: var(--cap-primary); }
+    .chapter-content { padding: 3rem 0; }
+    .content-section { margin-bottom: 3rem; }
+    .content-section h2 { font-size: 1.5rem; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 2px solid #6366f130; display: flex; align-items: center; gap: 0.75rem; }
+    .content-section h3 { font-size: 1.2rem; margin: 1.5rem 0 0.75rem; color: var(--cap-primary); }
+    .content-section p { margin-bottom: 1rem; line-height: 1.8; }
+    .content-section ul { margin-left: 1.5rem; margin-bottom: 1rem; }
+    .content-section li { margin-bottom: 0.5rem; color: var(--text-secondary); }
+    .diagram { background: var(--bg-card); border-radius: var(--radius-lg); padding: 2rem; margin: 1.5rem 0; border: 1px solid var(--glass-border); overflow-x: auto; }
+    .diagram-title { text-align: center; font-weight: 600; margin-bottom: 1.5rem; color: var(--cap-primary); }
+    .diagram-box { display: inline-block; padding: 1rem 1.5rem; background: linear-gradient(135deg, #6366f120, #818cf810); border: 2px solid #6366f140; border-radius: var(--radius-md); text-align: center; font-weight: 600; margin: 0.5rem; min-width: 120px; }
+    .diagram-arrow { display: inline-flex; align-items: center; justify-content: center; color: var(--cap-primary); font-size: 1.5rem; margin: 0 0.5rem; }
+    .diagram-row { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 0.5rem; margin: 0.5rem 0; }
+    .diagram-container { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; }
+    .diagram-layer { width: 100%; max-width: 500px; padding: 1rem; border-radius: var(--radius-md); text-align: center; font-weight: 600; position: relative; }
+    .diagram-layer::after { content: '↓'; position: absolute; bottom: -20px; left: 50%; transform: translateX(-50%); color: var(--text-muted); font-size: 1.2rem; }
+    .diagram-layer:last-child::after { display: none; }
+    .info-box { background: linear-gradient(135deg, #6366f110, #818cf805); border-left: 4px solid var(--cap-primary); border-radius: 0 var(--radius-md) var(--radius-md) 0; padding: 1.25rem; margin: 1.5rem 0; }
+    .info-box-title { font-weight: 700; color: var(--cap-primary); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; }
+    .curiosity-box { background: linear-gradient(135deg, rgba(245,158,11,0.1), rgba(245,158,11,0.05)); border-left: 4px solid #f59e0b; border-radius: 0 var(--radius-md) var(--radius-md) 0; padding: 1.25rem; margin: 1.5rem 0; }
+    .curiosity-box-title { font-weight: 700; color: #f59e0b; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; }
+    .warning-box { background: linear-gradient(135deg, rgba(239,68,68,0.1), rgba(239,68,68,0.05)); border-left: 4px solid #ef4444; border-radius: 0 var(--radius-md) var(--radius-md) 0; padding: 1.25rem; margin: 1.5rem 0; }
+    .warning-box-title { font-weight: 700; color: #ef4444; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; }
+    .quiz-section { background: linear-gradient(180deg, var(--bg-card), var(--bg-main)); padding: 3rem 0; border-top: 1px solid var(--glass-border); }
+    .quiz-section h2 { text-align: center; margin-bottom: 2rem; }
+    .flashcards-section { padding: 3rem 0; background: var(--bg-card); border-top: 1px solid var(--glass-border); }
+    .flashcards-section h2 { text-align: center; margin-bottom: 2rem; }
+    .dragdrop-section { padding: 3rem 0; background: linear-gradient(180deg, var(--bg-main), var(--bg-card)); border-top: 1px solid var(--glass-border); }
+    .dragdrop-section h2 { text-align: center; margin-bottom: 2rem; }
+    .complete-section { padding: 3rem 0; text-align: center; }
+    .complete-btn { padding: 1rem 2.5rem; font-size: 1.1rem; }
+    .chapter-footer-nav { display: flex; justify-content: space-between; align-items: center; padding: 2rem 0; border-top: 1px solid var(--glass-border); margin-top: 3rem; }
+    .chapter-footer-nav a { display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.5rem; background: var(--bg-card); border: 1px solid var(--glass-border); border-radius: var(--radius-md); color: var(--text-secondary); text-decoration: none; transition: var(--transition); }
+    .chapter-footer-nav a:hover { background: var(--cap-primary); color: white; border-color: var(--cap-primary); }
+    .footer { padding: 3rem 0; border-top: 1px solid var(--glass-border); text-align: center; }
+    .footer p { color: var(--text-muted); font-size: 0.9rem; }
+    @media (max-width: 768px) { .chapter-header { padding: 5rem 0 2rem; } .chapter-footer-nav { flex-direction: column; gap: 1rem; } .chapter-footer-nav a { width: 100%; justify-content: center; } }
+  </style>
+</head>
+<body>
+  <nav class="chapter-nav">
+    <a href="../index.html" class="chapter-nav-back"><span>←</span><span>Voltar ao Início</span></a>
+    <div class="chapter-nav-actions">
+      <button class="chapter-nav-btn" onclick="PainelPersonalizacao.abrir()">⚙️ Personalizar</button>
+      <button class="chapter-nav-btn" onclick="Progresso.concluirCapitulo(12); this.textContent='✅ Concluído'; this.disabled=true; Progresso.notificar('🎉 Capítulo 12 concluído! +100 XP');">✓ Marcar Concluído</button>
+    </div>
+  </nav>
+  <header class="chapter-header">
+    <div class="container chapter-header-content">
+      <div class="chapter-badge"><span>🔵</span><span>Capítulo 12</span></div>
+      <h1 class="chapter-title">CPU e Sistema Operacional</h1>
+      <p class="chapter-desc">🔵 CPU e Sistema Operacional — parte essencial da jornada para compreender o funcionamento interno do processador.</p>
+    </div>
+  </header>
+  <main class="chapter-content"><div class="container">
+<div class="content-section">
+  <h2>🐧 Como o Linux Conversa com a CPU</h2>
+  <p>O Linux é um sistema operacional que gerencia recursos de hardware, incluindo a CPU. Ele decide qual programa executa, por quanto tempo, e como compartilhar recursos entre processos.</p>
+
+  <div class="diagram">
+    <div class="diagram-title">🏗️ Arquitetura Linux-CPU</div>
+    <div style="display:flex;flex-direction:column;gap:0.75rem;max-width:500px;margin:0 auto">
+      <div class="diagram-box" style="width:100%;background:linear-gradient(135deg,#22c55e20,#15803d10);border-color:#22c55e40">
+        <strong>👤 Aplicações</strong><br>
+        <small>Navegador, Editor, Terminal...</small>
+      </div>
+      <span class="diagram-arrow">↓ syscalls</span>
+      <div class="diagram-box" style="width:100%;background:linear-gradient(135deg,#3b82f620,#1d4ed810);border-color:#3b82f640">
+        <strong>🐧 Linux Kernel</strong><br>
+        <small>Processos, Threads, Escalonamento, Memória, Drivers</small>
+      </div>
+      <span class="diagram-arrow">↓ instruções</span>
+      <div class="diagram-box" style="width:100%;background:linear-gradient(135deg,#ef444420,#b91c1c10);border-color:#ef444440">
+        <strong>🧠 CPU</strong><br>
+        <small>Executa instruções, modos de execução, interrupções</small>
+      </div>
+      <span class="diagram-arrow">↓</span>
+      <div class="diagram-box" style="width:100%;background:linear-gradient(135deg,#f9731620,#c2410c10);border-color:#f9731640">
+        <strong>💾 Hardware</strong><br>
+        <small>RAM, Disco, Rede, GPU, Periféricos</small>
+      </div>
+    </div>
+  </div>
+
+  <div class="info-box">
+    <div class="info-box-title">💡 Analogia</div>
+    <p>O Linux é como um maestro de orquestra. A CPU é a orquestra. O maestro decide qual instrumento (processo) toca quando, por quanto tempo, e como todos se sincronizam para criar uma sinfonia harmoniosa.</p>
+  </div>
+</div>
+
+<div class="content-section">
+  <h2>📋 Processos e Threads no Linux</h2>
+  <p>No Linux, tudo é representado como um processo:</p>
+
+  <pre><code>// Em C, você pode ver seu próprio PID (Process ID):
+#include <unistd.h>
+#include <stdio.h>
+
+int main() {
+    printf("Meu PID: %d
+", getpid());
+    printf("PID do meu pai: %d
+", getppid());
+
+    // Criar um novo processo:
+    pid_t filho = fork();
+
+    if (filho == 0) {
+        printf("Sou o processo FILHO! PID=%d
+", getpid());
+    } else {
+        printf("Sou o processo PAI! PID=%d, filho=%d
+", getpid(), filho);
+    }
+    return 0;
+}
+
+// Cada processo tem:
+// - PID único
+// - Espaço de memória próprio
+// - Tabela de arquivos abertos
+// - Contexto de execução (registradores)</code></pre>
+
+  <div class="diagram">
+    <div class="diagram-title">🧬 Processo vs Thread</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;max-width:600px;margin:0 auto">
+      <div class="diagram-box" style="text-align:left;background:linear-gradient(135deg,#3b82f620,#1d4ed810);border-color:#3b82f640">
+        <strong>📋 Processo</strong><br>
+        <small style="color:var(--text-muted)">
+        ✓ Espaço de memória próprio<br>
+        ✓ PID único<br>
+        ✓ Tabela de arquivos própria<br>
+        ✓ Independente (crash não afeta outros)<br>
+        ✗ Criação lenta (fork)<br>
+        ✗ Comunicação complexa (IPC)
+        </small>
+      </div>
+      <div class="diagram-box" style="text-align:left;background:linear-gradient(135deg,#22c55e20,#15803d10);border-color:#22c55e40">
+        <strong>🧵 Thread</strong><br>
+        <small style="color:var(--text-muted)">
+        ✓ Compartilha memória do processo<br>
+        ✓ TID único (dentro do processo)<br>
+        ✓ Mesma tabela de arquivos<br>
+        ✗ Crash afeta todo o processo<br>
+        ✓ Criação rápida (clone)<br>
+        ✓ Comunicação direta (memória compartilhada)
+        </small>
+      </div>
+    </div>
+  </div>
+
+  <div class="curiosity-box">
+    <div class="curiosity-box-title">🤔 Curiosidade</div>
+    <p>No Linux, threads são implementadas como processos leves (lightweight processes) usando a chamada de sistema <code>clone()</code>. Isso é diferente de outros sistemas operacionais! Você pode ver isso com <code>ps -eLf</code> que mostra threads como processos separados.</p>
+  </div>
+</div>
+
+<div class="content-section">
+  <h2>⏱️ Escalonamento (Scheduling)</h2>
+  <p>O escalonador do Linux decide QUAL processo/thread executa em CADA núcleo e POR QUANTO TEMPO:</p>
+
+  <pre><code>// O escalonador usa o algoritmo CFS (Completely Fair Scheduler):
+// - Cada processo recebe uma "fatia de tempo"
+// - Processos interativos (GUI) têm prioridade
+// - Processos em background usam CPU ociosa
+// - O timer interrompe a CPU para trocar processos
+
+// Você pode ver o escalonador em ação:
+$ top
+// Mostra processos ordenados por uso de CPU
+// Cada linha é um processo competindo por tempo de CPU
+
+$ ps -eo pid,comm,psr,%cpu | head
+// PSR = qual núcleo está executando
+// %CPU = percentual de uso</code></pre>
+
+  <div class="diagram">
+    <div class="diagram-title">📊 Round-Robin Simplificado</div>
+    <div style="display:flex;align-items:center;justify-content:center;gap:0.5rem;flex-wrap:wrap;max-width:500px;margin:0 auto">
+      <div class="diagram-box" style="background:#3b82f620;border-color:#3b82f640">P1<br><small>10ms</small></div>
+      <span class="diagram-arrow">→</span>
+      <div class="diagram-box" style="background:#22c55e20;border-color:#22c55e40">P2<br><small>10ms</small></div>
+      <span class="diagram-arrow">→</span>
+      <div class="diagram-box" style="background:#f9731620;border-color:#f9731640">P3<br><small>10ms</small></div>
+      <span class="diagram-arrow">→</span>
+      <div class="diagram-box" style="background:#a855f720;border-color:#a855f740">P4<br><small>10ms</small></div>
+      <span class="diagram-arrow">→</span>
+      <div class="diagram-box" style="background:#3b82f620;border-color:#3b82f640">P1<br><small>10ms</small></div>
+    </div>
+    <p style="text-align:center;margin-top:1rem;color:var(--text-muted)">Cada processo recebe uma fatia de tempo, depois passa a vez</p>
+  </div>
+</div>
+
+<div class="content-section">
+  <h2>🔄 Troca de Contexto (Context Switch)</h2>
+  <p>Quando o escalonador decide trocar de processo, a CPU precisa salvar o estado do processo atual e carregar o estado do próximo:</p>
+
+  <pre><code>// Troca de contexto envolve:
+1. Timer interrompe a CPU (interrupção)
+2. Kernel decide qual processo executa agora
+3. Salva registradores do processo atual na stack
+4. Salva RIP, RSP, RFLAGS na TCB (Task Control Block)
+5. Carrega registradores do próximo processo
+6. Atualiza tabelas de memória (MMU)
+7. Retorna ao User Mode com novo processo
+
+// Custo: ~1-10 microssegundos
+// Parece pouco, mas milhares de trocas/segundo somam!
+
+// Ver trocas de contexto:
+$ vmstat 1
+// A coluna 'cs' mostra context switches por segundo</code></pre>
+
+  <div class="warning-box">
+    <div class="warning-box-title">⚠️ Custo da Troca de Contexto</div>
+    <p>Cada troca de contexto invalida caches (cache misses ao carregar novo processo) e consiga tempo do kernel. Programas com muitas threads podem passar mais tempo trocando contexto do que executando útil!</p>
+  </div>
+</div>
+
+<div class="content-section">
+  <h2>🗺️ Resumo Visual</h2>
+  <div class="diagram">
+    <div class="diagram-title">🧩 Mapa Mental — CPU e SO</div>
+    <div class="diagram-row">
+      <div class="diagram-box" style="min-width:180px">
+        <strong>📋 Processo</strong><br>
+        <small style="color:var(--text-muted)">
+        ├─ PID único<br>
+        ├─ Memória própria<br>
+        ├─ Tabela de arquivos<br>
+        └─ Independente
+        </small>
+      </div>
+      <div class="diagram-box" style="min-width:180px">
+        <strong>🧵 Thread</strong><br>
+        <small style="color:var(--text-muted)">
+        ├─ TID único<br>
+        ├─ Compartilha memória<br>
+        ├─ Mesmos arquivos<br>
+        └─ Mais leve
+        </small>
+      </div>
+      <div class="diagram-box" style="min-width:180px">
+        <strong>⏱️ Escalonador</strong><br>
+        <small style="color:var(--text-muted)">
+        ├─ Decide quem roda<br>
+        ├─ Fatia de tempo<br>
+        ├─ Prioridades<br>
+        └─ CFS no Linux
+        </small>
+      </div>
+    </div>
+  </div>
+</div>
+</div></main>
+  <section class="quiz-section" id="quiz"><div class="container"><h2>🧠 Quiz do Capítulo 12</h2><div id="quiz-container"></div></div></section>
+  <section class="flashcards-section" id="flashcards"><div class="container"><h2>🎴 Flashcards</h2><div id="flashcards-container"></div></div></section>
+  <section class="dragdrop-section" id="dragdrop"><div class="container"><h2>🎯 Desafio: Arraste e Solte</h2><div id="dragdrop-container"></div></div></section>
+  <section class="complete-section"><div class="container"><h2>🎉 Parabéns por chegar até aqui!</h2><p class="mb-3">Você completou o conteúdo do Capítulo 12. Não se esqueça de marcar como concluído!</p><button class="btn btn-primary complete-btn" onclick="Progresso.concluirCapitulo(12); Progresso.notificar('🎉 Capítulo 12 concluído! +100 XP'); this.textContent='✅ Concluído'; this.disabled=true;">✓ Marcar Capítulo 12 como Concluído</button></div></section>
+  <div class="container"><div class="chapter-footer-nav"><a href="cap11.html">← Capítulo Anterior</a><a href="cap13.html">Próximo Capítulo →</a></div></div>
+  <footer class="footer"><div class="container"><p>Processador Desmistificado &copy; 2026</p></div></footer>
+  <script src="../js/main.js"></script>
+  <script>
+    const quizPerguntas = [
+  {
+    pergunta: "O que é um processo no Linux?",
+    opcoes: ["Um arquivo de sistema", "Um programa em execução com PID único e memória própria", "Um tipo de thread", "Um driver de hardware"],
+    correta: 1
+  },
+  {
+    pergunta: "Qual a diferença entre processo e thread?",
+    opcoes: ["Não há diferença", "Processo tem memória própria; thread compartilha memória", "Thread é mais lenta", "Processo não tem PID"],
+    correta: 1
+  },
+  {
+    pergunta: "O que é escalonamento (scheduling)?",
+    opcoes: ["Organização de arquivos", "Decidir qual processo executa e por quanto tempo", "Compactação de memória", "Backup automático"],
+    correta: 1
+  },
+  {
+    pergunta: "O que acontece durante uma troca de contexto?",
+    opcoes: ["O computador reinicia", "A CPU salva o estado do processo atual e carrega o próximo", "A memória RAM é limpa", "O disco é formatado"],
+    correta: 1
+  },
+  {
+    pergunta: "Qual comando mostra trocas de contexto por segundo?",
+    opcoes: ["top", "ps", "vmstat", "free"],
+    correta: 2
+  }
+];
+    Quiz.criar('quiz-container', quizPerguntas, 12);
+
+    const flashcardsData = [
+  { frente: "O que é um processo?", verso: "Um programa em execução com PID único, espaço de memória próprio e recursos independentes." },
+  { frente: "Qual a diferença entre processo e thread?", verso: "Processo: memória própria, independente, criação lenta. Thread: compartilha memória do processo, mais leve, criação rápida." },
+  { frente: "O que é escalonamento?", verso: "Mecanismo do SO que decide qual processo/thread executa em cada núcleo e por quanto tempo." },
+  { frente: "O que é troca de contexto?", verso: "Quando a CPU salva o estado de um processo e carrega o estado de outro para executar. Custa ~1-10 microssegundos." },
+  { frente: "Qual o escalonador do Linux?", verso: "CFS (Completely Fair Scheduler) — distribui tempo de CPU de forma justa entre processos, dando prioridade a processos interativos." }
+];
+    Flashcards.criar('flashcards-container', flashcardsData);
+
+    const dragdropData = [
+  { alvo: "Programa em execução com PID", item: "Processo" },
+  { alvo: "Compartilha memória do processo", item: "Thread" },
+  { alvo: "Decide quem executa e quando", item: "Escalonador" },
+  { alvo: "Salva estado e carrega próximo", item: "Troca de Contexto" },
+  { alvo: "Scheduler do Linux", item: "CFS" }
+];
+    DragDrop.criar('dragdrop-container', dragdropData, 12);
+</script>
+</body>
+</html>

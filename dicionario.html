@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dicionário do Processador | Processador Desmistificado</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/components.css">
+  <style>
+    .dict-header { position: relative; padding: 6rem 0 3rem; overflow: hidden; }
+    .dict-header::before { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(99,102,241,0.2), rgba(139,92,246,0.1)); }
+    .dict-header::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, rgba(99,102,241,0.6), transparent); }
+    .dict-header-content { position: relative; z-index: 1; text-align: center; }
+    .dict-title { font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 800; margin-bottom: 1rem; background: linear-gradient(135deg, #6366f1, #a78bfa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .dict-desc { font-size: 1.1rem; color: var(--text-secondary); max-width: 700px; margin: 0 auto; }
+    .dict-nav { position: fixed; top: 0; left: 0; right: 0; z-index: 1000; padding: 0.75rem 1.5rem; display: flex; justify-content: space-between; align-items: center; background: var(--glass); backdrop-filter: blur(20px); border-bottom: 1px solid var(--glass-border); }
+    .dict-nav-back { display: flex; align-items: center; gap: 0.5rem; color: var(--text-secondary); font-size: 0.9rem; text-decoration: none; transition: var(--transition); }
+    .dict-nav-back:hover { color: var(--text-primary); }
+    .dict-nav-btn { padding: 0.4rem 0.8rem; border-radius: var(--radius-sm); background: var(--bg-elevated); border: 1px solid var(--glass-border); color: var(--text-secondary); cursor: pointer; transition: var(--transition); font-size: 0.85rem; }
+    .dict-nav-btn:hover { background: var(--primary); color: white; border-color: var(--primary); }
+    .dict-content { padding: 3rem 0; }
+    .dict-letter { font-size: 2rem; font-weight: 800; color: var(--primary-light); margin: 2rem 0 1rem; padding-bottom: 0.5rem; border-bottom: 2px solid var(--glass-border); }
+    .dict-item { background: var(--bg-card); border-radius: var(--radius-md); padding: 1.25rem; margin-bottom: 1rem; border: 1px solid var(--glass-border); transition: var(--transition); }
+    .dict-item:hover { border-color: rgba(99,102,241,0.3); transform: translateX(4px); }
+    .dict-term { font-weight: 700; font-size: 1.1rem; color: var(--primary-light); margin-bottom: 0.5rem; }
+    .dict-def { color: var(--text-secondary); line-height: 1.7; }
+    .dict-tag { display: inline-block; padding: 0.15rem 0.5rem; background: rgba(99,102,241,0.1); color: var(--primary-light); border-radius: 100px; font-size: 0.7rem; font-weight: 600; margin-right: 0.5rem; }
+    .dict-search { width: 100%; max-width: 500px; padding: 0.75rem 1rem; border-radius: var(--radius-md); background: var(--bg-card); border: 1px solid var(--glass-border); color: var(--text-primary); font-size: 1rem; margin: 0 auto 2rem; display: block; }
+    .dict-search:focus { outline: none; border-color: var(--primary); }
+    .footer { padding: 3rem 0; border-top: 1px solid var(--glass-border); text-align: center; }
+    .footer p { color: var(--text-muted); font-size: 0.9rem; }
+  </style>
+</head>
+<body>
+  <nav class="dict-nav">
+    <a href="index.html" class="dict-nav-back"><span>←</span><span>Voltar ao Início</span></a>
+    <div>
+      <button class="dict-nav-btn" onclick="PainelPersonalizacao.abrir()">⚙️ Personalizar</button>
+    </div>
+  </nav>
+  <header class="dict-header">
+    <div class="container dict-header-content">
+      <div class="dict-title">📖 Dicionário do Processador</div>
+      <p class="dict-desc">Termos técnicos explicados de forma simples e direta. Use a busca para encontrar rapidamente.</p>
+    </div>
+  </header>
+  <main class="dict-content">
+    <div class="container">
+      <input type="text" class="dict-search" id="dict-search" placeholder="🔍 Buscar termo..." onkeyup="filtrarDicionario()">
+
+      <div class="dict-letter">A</div>
+      <div class="dict-item" data-term="ALU Arithmetic Logic Unit">
+        <div class="dict-term">ALU <span class="dict-tag">Arithmetic Logic Unit</span></div>
+        <div class="dict-def">Unidade Lógica e Aritmética da CPU. Executa operações matemáticas (soma, subtração) e lógicas (AND, OR, XOR, comparações). É o "cérebro matemático" do processador.</div>
+      </div>
+      <div class="dict-item" data-term="ASLR Address Space Layout Randomization">
+        <div class="dict-term">ASLR <span class="dict-tag">Address Space Layout Randomization</span></div>
+        <div class="dict-def">Técnica de segurança que randomiza os endereços de memória de stack, heap e bibliotecas a cada execução de um programa. Dificulta ataques que dependem de endereços conhecidos.</div>
+      </div>
+      <div class="dict-item" data-term="Assembly">
+        <div class="dict-term">Assembly</div>
+        <div class="dict-def">Linguagem de programação de baixo nível que usa mnemônicos para representar instruções de máquina. Cada instrução Assembly corresponde a uma ou mais instruções de código de máquina. É específica da arquitetura (x86, ARM, MIPS).</div>
+      </div>
+
+      <div class="dict-letter">B</div>
+      <div class="dict-item" data-term="Barramento Bus">
+        <div class="dict-term">Barramento <span class="dict-tag">Bus</span></div>
+        <div class="dict-def">Caminho de comunicação dentro do computador. Existem barramentos de dados (transportam dados), de endereços (indicam posições de memória) e de controle (sinais de comando). Determinam a largura e velocidade de transferência.</div>
+      </div>
+      <div class="dict-item" data-term="Buffer Overflow">
+        <div class="dict-term">Buffer Overflow</div>
+        <div class="dict-def">Vulnerabilidade onde um programa escreve mais dados em um buffer (área de memória temporária) do que ele pode conter, sobrescrevendo áreas adjacentes da memória. Pode ser explorado para executar código malicioso ou causar crashes.</div>
+      </div>
+      <div class="dict-item" data-term="Byte">
+        <div class="dict-term">Byte</div>
+        <div class="dict-def">Unidade básica de informação digital composta por 8 bits. Pode representar 256 valores diferentes (0-255). É a unidade padrão para medir tamanho de arquivos e memória.</div>
+      </div>
+
+      <div class="dict-letter">C</div>
+      <div class="dict-item" data-term="Cache">
+        <div class="dict-term">Cache</div>
+        <div class="dict-def">Memória ultra-rápida próxima à CPU que armazena cópias dos dados mais frequentemente usados da RAM. Existem três níveis: L1 (mais rápido, menor), L2 e L3 (maior, mais lento). Reduz drasticamente o tempo de acesso à memória.</div>
+      </div>
+      <div class="dict-item" data-term="Clock">
+        <div class="dict-term">Clock</div>
+        <div class="dict-def">Sinal elétrico que oscila entre ligado e desligado, sincronizando todas as operações da CPU. Medido em Hertz (Hz), com processadores modernos operando em Gigahertz (GHz) — bilhões de ciclos por segundo.</div>
+      </div>
+      <div class="dict-item" data-term="Compilador Compiler">
+        <div class="dict-term">Compilador <span class="dict-tag">Compiler</span></div>
+        <div class="dict-def">Programa que traduz código fonte de linguagem de alto nível (como C) para código de máquina executável pela CPU. Inclui etapas de pré-processamento, compilação, assembly e linking.</div>
+      </div>
+      <div class="dict-item" data-term="Context Switch">
+        <div class="dict-term">Context Switch</div>
+        <div class="dict-def">Processo de salvar o estado (registradores, contador de programa) de um processo e carregar o estado de outro. Permite que o sistema operacional execute múltiplos processos aparentemente simultaneamente.</div>
+      </div>
+      <div class="dict-item" data-term="CPU Central Processing Unit">
+        <div class="dict-term">CPU <span class="dict-tag">Central Processing Unit</span></div>
+        <div class="dict-def">Unidade Central de Processamento. O "cérebro" do computador que executa instruções, processa dados e coordena todas as operações do sistema. Contém a ALU, unidade de controle, registradores e caches.</div>
+      </div>
+      <div class="dict-item" data-term="CU Control Unit">
+        <div class="dict-term">CU <span class="dict-tag">Control Unit</span></div>
+        <div class="dict-def">Unidade de Controle da CPU. Coordena todas as operações do processador: busca instruções, decodifica, sinaliza outros componentes e controla o fluxo de execução. É o "maestro" da CPU.</div>
+      </div>
+
+      <div class="dict-letter">D</div>
+      <div class="dict-item" data-term="DEP Data Execution Prevention">
+        <div class="dict-term">DEP <span class="dict-tag">Data Execution Prevention</span></div>
+        <div class="dict-def">Técnica de segurança que marca regiões de dados (stack, heap) como não executáveis. Impede que código malicioso injetado nessas áreas seja executado pela CPU.</div>
+      </div>
+
+      <div class="dict-letter">E</div>
+      <div class="dict-item" data-term="Endianness">
+        <div class="dict-term">Endianness</div>
+        <div class="dict-def">Ordem em que bytes são armazenados na memória. Little-endian: byte menos significativo primeiro (x86, ARM). Big-endian: byte mais significativo primeiro (network protocols, alguns processadores antigos).</div>
+      </div>
+
+      <div class="dict-letter">F</div>
+      <div class="dict-item" data-term="Fetch-Decode-Execute">
+        <div class="dict-term">Fetch-Decode-Execute</div>
+        <div class="dict-def">Ciclo básico de execução da CPU. Fetch: busca a próxima instrução na memória. Decode: interpreta o que a instrução faz. Execute: realiza a operação. Repetido bilhões de vezes por segundo.</div>
+      </div>
+      <div class="dict-item" data-term="FPU Floating Point Unit">
+        <div class="dict-term">FPU <span class="dict-tag">Floating Point Unit</span></div>
+        <div class="dict-def">Unidade de Ponto Flutuante. Componente da CPU especializado em cálculos com números decimais (ponto flutuante). Essencial para gráficos 3D, cálculos científicos e machine learning.</div>
+      </div>
+
+      <div class="dict-letter">G</div>
+      <div class="dict-item" data-term="GHz Gigahertz">
+        <div class="dict-term">GHz <span class="dict-tag">Gigahertz</span></div>
+        <div class="dict-def">Unidade de frequência igual a 1 bilhão de Hertz (ciclos por segundo). Frequência do clock da CPU. Um processador de 3 GHz executa 3 bilhões de ciclos por segundo.</div>
+      </div>
+
+      <div class="dict-letter">H</div>
+      <div class="dict-item" data-term="Heap">
+        <div class="dict-term">Heap</div>
+        <div class="dict-def">Região da memória RAM usada para alocação dinâmica. Gerenciada manualmente pelo programador (malloc, calloc, realloc, free). Maior que a stack, mas mais lenta e sujeita a memory leaks.</div>
+      </div>
+      <div class="dict-item" data-term="Hyper-Threading">
+        <div class="dict-term">Hyper-Threading</div>
+        <div class="dict-def">Tecnologia da Intel onde um núcleo físico se apresenta como dois núcleos lógicos ao sistema operacional. As duas threads compartilham recursos (ALU, FPU) mas têm registradores separados. Ganho de performance: ~15-30%.</div>
+      </div>
+
+      <div class="dict-letter">I</div>
+      <div class="dict-item" data-term="IDT Interrupt Descriptor Table">
+        <div class="dict-term">IDT <span class="dict-tag">Interrupt Descriptor Table</span></div>
+        <div class="dict-def">Tabela que mapeia cada tipo de interrupção para o endereço da rotina de tratamento (handler) correspondente. Usada pela CPU para saber para onde saltar quando uma interrupção ocorre.</div>
+      </div>
+      <div class="dict-item" data-term="Interrupção Interrupt">
+        <div class="dict-term">Interrupção <span class="dict-tag">Interrupt</span></div>
+        <div class="dict-def">Sinal que faz a CPU pausar o programa atual para atender a um evento urgente. Fontes: teclado, mouse, disco, rede, timer. Essencial para multitarefa e resposta a eventos de hardware.</div>
+      </div>
+      <div class="dict-item" data-term="IPC Instructions Per Clock">
+        <div class="dict-term">IPC <span class="dict-tag">Instructions Per Clock</span></div>
+        <div class="dict-def">Número de instruções que a CPU executa por ciclo de clock. CPUs modernas com pipeline e execução fora de ordem podem executar múltiplas instruções por ciclo. Maior IPC = mais performance por GHz.</div>
+      </div>
+
+      <div class="dict-letter">K</div>
+      <div class="dict-item" data-term="Kernel">
+        <div class="dict-term">Kernel</div>
+        <div class="dict-def">Núcleo do sistema operacional. Executa em Kernel Mode (Ring 0) com acesso total ao hardware. Gerencia memória, processos, dispositivos, sistemas de arquivos e fornece serviços via syscalls.</div>
+      </div>
+      <div class="dict-item" data-term="Kernel Mode">
+        <div class="dict-term">Kernel Mode</div>
+        <div class="dict-def">Modo de execução privilegiado da CPU onde o sistema operacional roda. Tem acesso total à memória, pode acessar hardware diretamente e modificar tabelas de proteção. Crash no kernel = crash do sistema.</div>
+      </div>
+
+      <div class="dict-letter">L</div>
+      <div class="dict-item" data-term="Localidade de Referência">
+        <div class="dict-term">Localidade de Referência</div>
+        <div class="dict-def">Princípio que programas tendem a acessar dados próximos ou recentemente usados. Localidade temporal: reutilizar dados recentes. Localidade espacial: acessar dados próximos na memória. Fundamental para eficiência do cache.</div>
+      </div>
+
+      <div class="dict-letter">M</div>
+      <div class="dict-item" data-term="Memory Leak">
+        <div class="dict-term">Memory Leak</div>
+        <div class="dict-def">Vazamento de memória. Ocorre quando memória alocada dinamicamente (malloc) nunca é liberada (free). O programa consome cada vez mais memória até esgotar recursos do sistema.</div>
+      </div>
+      <div class="dict-item" data-term="MMU Memory Management Unit">
+        <div class="dict-term">MMU <span class="dict-tag">Memory Management Unit</span></div>
+        <div class="dict-def">Unidade de Gerenciamento de Memória. Hardware dentro da CPU (ou próximo a ela) que traduz endereços virtuais em endereços físicos. Permite isolamento de processos e proteção de memória.</div>
+      </div>
+      <div class="dict-item" data-term="Multicore">
+        <div class="dict-term">Multicore</div>
+        <div class="dict-def">Arquitetura de processador com múltiplos núcleos (cores) independentes no mesmo chip. Cada núcleo é uma CPU completa. Permite verdadeiro paralelismo e melhor eficiência energética que aumentar GHz.</div>
+      </div>
+
+      <div class="dict-letter">N</div>
+      <div class="dict-item" data-term="Núcleo Core">
+        <div class="dict-term">Núcleo <span class="dict-tag">Core</span></div>
+        <div class="dict-def">Unidade de processamento independente dentro de um chip de CPU. Contém ALU, FPU, registradores e caches próprios. Processadores modernos têm de 2 a 64+ núcleos.</div>
+      </div>
+
+      <div class="dict-letter">O</div>
+      <div class="dict-item" data-term="Opcode">
+        <div class="dict-term">Opcode</div>
+        <div class="dict-def">Código de operação. Parte da instrução de máquina que especifica QUAL operação deve ser executada (soma, subtração, movimento, salto, etc.). Cada opcode corresponde a uma ação específica da CPU.</div>
+      </div>
+
+      <div class="dict-letter">P</div>
+      <div class="dict-item" data-term="Pipeline">
+        <div class="dict-term">Pipeline</div>
+        <div class="dict-def">Técnica onde a CPU processa múltiplas instruções simultaneamente em diferentes estágios (Fetch, Decode, Execute, Memory, Writeback). Aumenta o throughput sem aumentar a frequência do clock.</div>
+      </div>
+      <div class="dict-item" data-term="Processo Process">
+        <div class="dict-term">Processo <span class="dict-tag">Process</span></div>
+        <div class="dict-def">Programa em execução com seu próprio espaço de memória, PID (Process ID) e recursos. Isolado de outros processos pelo sistema operacional. Pode conter múltiplas threads.</div>
+      </div>
+
+      <div class="dict-letter">R</div>
+      <div class="dict-item" data-term="RAM Random Access Memory">
+        <div class="dict-term">RAM <span class="dict-tag">Random Access Memory</span></div>
+        <div class="dict-def">Memória de Acesso Aleatório. Memória volátil (perde dados ao desligar) usada como "mesa de trabalho" da CPU. Mais lenta que cache e registradores, mas muito maior (GBs vs KBs).</div>
+      </div>
+      <div class="dict-item" data-term="Registrador Register">
+        <div class="dict-term">Registrador <span class="dict-tag">Register</span></div>
+        <div class="dict-def">Memória ultra-rápida dentro da CPU. Armazena dados temporários para processamento imediato. Em x86_64: RAX, RBX, RCX, RDX (gerais), RIP, RSP, RBP (especiais), RFLAGS (status). Acesso em ~1 ciclo.</div>
+      </div>
+      <div class="dict-item" data-term="RIP Instruction Pointer">
+        <div class="dict-term">RIP <span class="dict-tag">Instruction Pointer</span></div>
+        <div class="dict-def">Registrador que aponta para o endereço da PRÓXIMA instrução a ser executada. Controla o fluxo do programa. Não pode ser acessado diretamente pelo programador em x86_64.</div>
+      </div>
+      <div class="dict-item" data-term="ROP Return-Oriented Programming">
+        <div class="dict-term">ROP <span class="dict-tag">Return-Oriented Programming</span></div>
+        <div class="dict-def">Técnica de exploração que reutiliza pequenos trechos de código existentes (gadgets) em vez de injetar novo código. Usada para burlar proteções como DEP/NX. Defesa: CFI (Control-Flow Integrity).</div>
+      </div>
+      <div class="dict-item" data-term="RSP Stack Pointer">
+        <div class="dict-term">RSP <span class="dict-tag">Stack Pointer</span></div>
+        <div class="dict-def">Registrador que aponta para o TOPO da pilha (stack). Diminui em PUSH e aumenta em POP. Crítico para chamadas de função e gerenciamento de variáveis locais.</div>
+      </div>
+
+      <div class="dict-letter">S</div>
+      <div class="dict-item" data-term="Stack Canary">
+        <div class="dict-term">Stack Canary</div>
+        <div class="dict-def">Valor aleatório colocado entre o buffer e o endereço de retorno na stack. Se um buffer overflow tentar sobrescrever o endereço de retorno, o canary será alterado primeiro. O programa detecta isso e aborta antes de retornar.</div>
+      </div>
+      <div class="dict-item" data-term="Stack Pilha">
+        <div class="dict-term">Stack <span class="dict-tag">Pilha</span></div>
+        <div class="dict-def">Região da memória RAM organizada como LIFO (Last In, First Out). Usada para chamadas de função, variáveis locais e endereços de retorno. Gerenciada automaticamente pelo compilador. Cresce para endereços menores.</div>
+      </div>
+      <div class="dict-item" data-term="Syscall System Call">
+        <div class="dict-term">Syscall <span class="dict-tag">System Call</span></div>
+        <div class="dict-def">Chamada de sistema. Instrução especial que faz a CPU trocar de User Mode para Kernel Mode para executar operações privilegiadas (ler arquivo, alocar memória, criar processo). Interface entre programas e o sistema operacional.</div>
+      </div>
+
+      <div class="dict-letter">T</div>
+      <div class="dict-item" data-term="Thread">
+        <div class="dict-term">Thread</div>
+        <div class="dict-def">Sequência de instruções que a CPU executa. Dentro de um processo, múltiplas threads compartilham o mesmo espaço de memória mas têm seus próprios registradores e pilha. Permite concorrência dentro de um programa.</div>
+      </div>
+      <div class="dict-item" data-term="Transistor">
+        <div class="dict-term">Transistor</div>
+        <div class="dict-def">Componente eletrônico fundamental que funciona como um interruptor controlado eletricamente. CPUs modernas contêm bilhões de transistores microscopicos. Cada transistor pode estar ligado (1) ou desligado (0).</div>
+      </div>
+
+      <div class="dict-letter">U</div>
+      <div class="dict-item" data-term="User Mode">
+        <div class="dict-term">User Mode</div>
+        <div class="dict-def">Modo de execução não-privilegiado da CPU onde programas de usuário rodam. Acesso limitado à memória, sem acesso direto ao hardware. Se um programa crashar, o sistema continua funcionando. Seguro e isolado.</div>
+      </div>
+
+      <div class="dict-letter">V</div>
+      <div class="dict-item" data-term="Virtualização">
+        <div class="dict-term">Virtualização</div>
+        <div class="dict-def">Técnica que permite executar múltiplos sistemas operacionais simultaneamente em um único hardware físico. Usa extensões da CPU (Intel VT-x, AMD-V) para isolar e gerenciar máquinas virtuais de forma eficiente.</div>
+      </div>
+
+      <div class="dict-letter">X</div>
+      <div class="dict-item" data-term="x86 x86_64">
+        <div class="dict-term">x86 / x86_64</div>
+        <div class="dict-def">Arquitetura de processadores da Intel/AMD. x86 = 32-bit (registradores de 32 bits, endereços de 32 bits). x86_64 = 64-bit (registradores de 64 bits, endereços de 64 bits, mais registradores disponíveis). Dominante em PCs e servidores.</div>
+      </div>
+    </div>
+  </main>
+  <footer class="footer">
+    <div class="container">
+      <p>Processador Desmistificado &copy; 2026</p>
+    </div>
+  </footer>
+  <script src="js/main.js"></script>
+  <script>
+    function filtrarDicionario() {
+      const termo = document.getElementById('dict-search').value.toLowerCase();
+      const itens = document.querySelectorAll('.dict-item');
+      itens.forEach(item => {
+        const texto = item.getAttribute('data-term').toLowerCase();
+        if (texto.includes(termo)) {
+          item.style.display = 'block';
+        } else {
+          item.style.display = 'none';
+        }
+      });
+      // Esconde/mostra letras
+      document.querySelectorAll('.dict-letter').forEach(letra => {
+        let visivel = false;
+        let next = letra.nextElementSibling;
+        while (next && !next.classList.contains('dict-letter')) {
+          if (next.classList.contains('dict-item') && next.style.display !== 'none') {
+            visivel = true;
+          }
+          next = next.nextElementSibling;
+        }
+        letra.style.display = visivel ? 'block' : 'none';
+      });
+    }
+  </script>
+</body>
+</html>

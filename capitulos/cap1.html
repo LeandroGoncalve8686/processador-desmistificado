@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Capítulo 1 — O Que é um Processador? | Processador Desmistificado</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <style>
+    /* ===== TEMA DO CAPITULO 1 ===== */
+    :root {
+      --cap-primary: #3b82f6;
+      --cap-secondary: #60a5fa;
+    }
+
+    .chapter-header {
+      position: relative;
+      padding: 6rem 0 3rem;
+      overflow: hidden;
+    }
+    .chapter-header::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, #3b82f620, #60a5fa10);
+    }
+    .chapter-header::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, #3b82f660, transparent);
+    }
+    .chapter-header-content {
+      position: relative;
+      z-index: 1;
+    }
+    .chapter-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.4rem 1rem;
+      background: #3b82f620;
+      border: 1px solid #3b82f640;
+      border-radius: 100px;
+      font-size: 0.85rem;
+      color: #3b82f6;
+      margin-bottom: 1rem;
+    }
+    .chapter-title {
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      font-weight: 800;
+      margin-bottom: 1rem;
+      background: linear-gradient(135deg, #3b82f6, #60a5fa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .chapter-desc {
+      font-size: 1.1rem;
+      color: var(--text-secondary);
+      max-width: 700px;
+    }
+
+    /* ===== NAVBAR DO CAPITULO ===== */
+    .chapter-nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 1000;
+      padding: 0.75rem 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--glass);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--glass-border);
+    }
+    .chapter-nav-back {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      text-decoration: none;
+      transition: var(--transition);
+    }
+    .chapter-nav-back:hover {
+      color: var(--text-primary);
+    }
+    .chapter-nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .chapter-nav-btn {
+      padding: 0.4rem 0.8rem;
+      border-radius: var(--radius-sm);
+      background: var(--bg-elevated);
+      border: 1px solid var(--glass-border);
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: var(--transition);
+      font-size: 0.85rem;
+    }
+    .chapter-nav-btn:hover {
+      background: var(--cap-primary);
+      color: white;
+      border-color: var(--cap-primary);
+    }
+
+    /* ===== CONTEUDO ===== */
+    .chapter-content {
+      padding: 3rem 0;
+    }
+    .content-section {
+      margin-bottom: 3rem;
+    }
+    .content-section h2 {
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid #3b82f630;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .content-section h3 {
+      font-size: 1.2rem;
+      margin: 1.5rem 0 0.75rem;
+      color: var(--cap-primary);
+    }
+    .content-section p {
+      margin-bottom: 1rem;
+      line-height: 1.8;
+    }
+    .content-section ul {
+      margin-left: 1.5rem;
+      margin-bottom: 1rem;
+    }
+    .content-section li {
+      margin-bottom: 0.5rem;
+      color: var(--text-secondary);
+    }
+
+    /* ===== DIAGRAMAS ===== */
+    .diagram {
+      background: var(--bg-card);
+      border-radius: var(--radius-lg);
+      padding: 2rem;
+      margin: 1.5rem 0;
+      border: 1px solid var(--glass-border);
+      overflow-x: auto;
+    }
+    .diagram-title {
+      text-align: center;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+      color: var(--cap-primary);
+    }
+    .diagram-box {
+      display: inline-block;
+      padding: 1rem 1.5rem;
+      background: linear-gradient(135deg, #3b82f620, #60a5fa10);
+      border: 2px solid #3b82f640;
+      border-radius: var(--radius-md);
+      text-align: center;
+      font-weight: 600;
+      margin: 0.5rem;
+      min-width: 120px;
+    }
+    .diagram-arrow {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--cap-primary);
+      font-size: 1.5rem;
+      margin: 0 0.5rem;
+    }
+    .diagram-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin: 0.5rem 0;
+    }
+    .diagram-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .diagram-layer {
+      width: 100%;
+      max-width: 500px;
+      padding: 1rem;
+      border-radius: var(--radius-md);
+      text-align: center;
+      font-weight: 600;
+      position: relative;
+    }
+    .diagram-layer::after {
+      content: '↓';
+      position: absolute;
+      bottom: -20px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: var(--text-muted);
+      font-size: 1.2rem;
+    }
+    .diagram-layer:last-child::after {
+      display: none;
+    }
+
+    /* ===== CAIXAS ESPECIAIS ===== */
+    .info-box {
+      background: linear-gradient(135deg, #3b82f610, #60a5fa05);
+      border-left: 4px solid var(--cap-primary);
+      border-radius: 0 var(--radius-md) var(--radius-md) 0;
+      padding: 1.25rem;
+      margin: 1.5rem 0;
+    }
+    .info-box-title {
+      font-weight: 700;
+      color: var(--cap-primary);
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .curiosity-box {
+      background: linear-gradient(135deg, rgba(245,158,11,0.1), rgba(245,158,11,0.05));
+      border-left: 4px solid #f59e0b;
+      border-radius: 0 var(--radius-md) var(--radius-md) 0;
+      padding: 1.25rem;
+      margin: 1.5rem 0;
+    }
+    .curiosity-box-title {
+      font-weight: 700;
+      color: #f59e0b;
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .warning-box {
+      background: linear-gradient(135deg, rgba(239,68,68,0.1), rgba(239,68,68,0.05));
+      border-left: 4px solid #ef4444;
+      border-radius: 0 var(--radius-md) var(--radius-md) 0;
+      padding: 1.25rem;
+      margin: 1.5rem 0;
+    }
+    .warning-box-title {
+      font-weight: 700;
+      color: #ef4444;
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    /* ===== QUIZ SECTION ===== */
+    .quiz-section {
+      background: linear-gradient(180deg, var(--bg-card), var(--bg-main));
+      padding: 3rem 0;
+      border-top: 1px solid var(--glass-border);
+    }
+    .quiz-section h2 {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    /* ===== FLASHCARDS SECTION ===== */
+    .flashcards-section {
+      padding: 3rem 0;
+      background: var(--bg-card);
+      border-top: 1px solid var(--glass-border);
+    }
+    .flashcards-section h2 {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    /* ===== DRAGDROP SECTION ===== */
+    .dragdrop-section {
+      padding: 3rem 0;
+      background: linear-gradient(180deg, var(--bg-main), var(--bg-card));
+      border-top: 1px solid var(--glass-border);
+    }
+    .dragdrop-section h2 {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    /* ===== COMPLETE SECTION ===== */
+    .complete-section {
+      padding: 3rem 0;
+      text-align: center;
+    }
+    .complete-btn {
+      padding: 1rem 2.5rem;
+      font-size: 1.1rem;
+    }
+
+    /* ===== FOOTER NAV ===== */
+    .chapter-footer-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 2rem 0;
+      border-top: 1px solid var(--glass-border);
+      margin-top: 3rem;
+    }
+    .chapter-footer-nav a {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.5rem;
+      background: var(--bg-card);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-md);
+      color: var(--text-secondary);
+      text-decoration: none;
+      transition: var(--transition);
+    }
+    .chapter-footer-nav a:hover {
+      background: var(--cap-primary);
+      color: white;
+      border-color: var(--cap-primary);
+    }
+
+    @media (max-width: 768px) {
+      .chapter-header { padding: 5rem 0 2rem; }
+      .chapter-footer-nav { flex-direction: column; gap: 1rem; }
+      .chapter-footer-nav a { width: 100%; justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+  <!-- ALTERE AQUI A NAVBAR DO CAPITULO -->
+  <nav class="chapter-nav">
+    <a href="../index.html" class="chapter-nav-back">
+      <span>←</span>
+      <span>Voltar ao Início</span>
+    </a>
+    <div class="chapter-nav-actions">
+      <button class="chapter-nav-btn" onclick="PainelPersonalizacao.abrir()">⚙️ Personalizar</button>
+      <button class="chapter-nav-btn" onclick="Progresso.concluirCapitulo(1); this.textContent='✅ Concluído'; this.disabled=true; Progresso.notificar('🎉 Capítulo 1 concluído! +100 XP');">✓ Marcar Concluído</button>
+    </div>
+  </nav>
+
+  <!-- HEADER DO CAPITULO -->
+  <header class="chapter-header">
+    <div class="container chapter-header-content">
+      <div class="chapter-badge">
+        <span>🔵</span>
+        <span>Capítulo 01</span>
+      </div>
+      <h1 class="chapter-title">O Que é um Processador?</h1>
+      <p class="chapter-desc">🔵 O Que é um Processador? — parte essencial da jornada para compreender o funcionamento interno do processador.</p>
+    </div>
+  </header>
+
+  <!-- CONTEUDO PRINCIPAL -->
+  <main class="chapter-content">
+    <div class="container">
+      
+<div class="content-section">
+  <h2>🧠 A CPU como Cérebro do Computador</h2>
+  <p>Imagine que o computador é como uma cidade. A CPU (Central Processing Unit) é o prefeito — ela toma todas as decisões importantes, coordena o tráfego de informações e garante que tudo funcione em harmonia. Sem a CPU, o computador é apenas uma caixa de metal inerte.</p>
+
+  <p>A CPU é um chip de silício extremamente complexo, contendo bilhões de transistores microscopicos que funcionam como interruptores eletrônicos. Cada transistor pode estar ligado (1) ou desligado (0), e é a combinação desses bilhões de estados que permite todo o processamento que conhecemos.</p>
+
+  <div class="info-box">
+    <div class="info-box-title">💡 Conceito Fundamental</div>
+    <p>A CPU não "pensa" como um ser humano. Ela executa instruções matemáticas e lógicas em velocidades incríveis — bilhões de operações por segundo. O que chamamos de "inteligência" do computador é, na verdade, a execução meticulosa de milhões de instruções simples.</p>
+  </div>
+</div>
+
+<div class="content-section">
+  <h2>⚡ O Que a CPU Realmente Faz?</h2>
+  <p>A CPU executa três tarefas fundamentais, repetidas bilhões de vezes por segundo:</p>
+  <ul>
+    <li><strong>Buscar (Fetch):</strong> A CPU busca a próxima instrução na memória RAM</li>
+    <li><strong>Decodificar (Decode):</strong> Interpreta o que a instrução significa</li>
+    <li><strong>Executar (Execute):</strong> Realiza a operação indicada pela instrução</li>
+  </ul>
+
+  <div class="diagram">
+    <div class="diagram-title">🔄 Ciclo Básico de Execução</div>
+    <div class="diagram-row">
+      <div class="diagram-box">📥 Fetch<br><small>Buscar instrução</small></div>
+      <span class="diagram-arrow">→</span>
+      <div class="diagram-box">🔍 Decode<br><small>Decodificar</small></div>
+      <span class="diagram-arrow">→</span>
+      <div class="diagram-box">⚙️ Execute<br><small>Executar</small></div>
+      <span class="diagram-arrow">→</span>
+      <div class="diagram-box">🔄 Repeat<br><small>Repetir</small></div>
+    </div>
+  </div>
+</div>
+
+<div class="content-section">
+  <h2>🆚 Diferença entre CPU, RAM e Armazenamento</h2>
+  <p>É comum confundir esses três componentes. Vamos esclarecer:</p>
+
+  <div class="diagram">
+    <div class="diagram-title">📊 Hierarquia de Componentes</div>
+    <div class="diagram-row">
+      <div class="diagram-box" style="background:linear-gradient(135deg,#3b82f620,#1d4ed810);border-color:#3b82f640">
+        🧠 CPU<br><small>Processamento<br>Velocidade: ns</small>
+      </div>
+      <span class="diagram-arrow">↔</span>
+      <div class="diagram-box" style="background:linear-gradient(135deg,#22c55e20,#15803d10);border-color:#22c55e40">
+        💾 RAM<br><small>Memória de trabalho<br>Velocidade: ns</small>
+      </div>
+      <span class="diagram-arrow">↔</span>
+      <div class="diagram-box" style="background:linear-gradient(135deg,#f9731620,#c2410c10);border-color:#f9731640">
+        💿 SSD/HD<br><small>Armazenamento<br>Velocidade: ms</small>
+      </div>
+    </div>
+  </div>
+
+  <ul>
+    <li><strong>CPU:</strong> O "cérebro" que processa dados e executa instruções. É o componente mais rápido.</li>
+    <li><strong>RAM (Memória):</strong> A "mesa de trabalho" onde a CPU coloca os dados que está usando no momento. É volátil — quando desliga o computador, tudo some.</li>
+    <li><strong>Armazenamento (SSD/HD):</strong> O "arquivo morto" onde programas e arquivos ficam guardados permanentemente. É muito mais lento que a RAM.</li>
+  </ul>
+
+  <div class="curiosity-box">
+    <div class="curiosity-box-title">🤔 Curiosidade</div>
+    <p>Se a CPU fosse um estudante fazendo uma prova, a RAM seria a folha de rascunho (rápida, temporária) e o SSD seria o caderno (mais lento, mas guarda tudo permanentemente).</p>
+  </div>
+</div>
+
+<div class="content-section">
+  <h2>💻 Como a CPU Executa Programas</h2>
+  <p>Quando você clica duas vezes em um programa (como o navegador), ocorre uma sequência fascinante de eventos:</p>
+  <ol style="margin-left:1.5rem;margin-bottom:1rem;color:var(--text-secondary)">
+    <li>O sistema operacional encontra o programa no SSD/HD</li>
+    <li>Copia o programa para a RAM (memória de trabalho)</li>
+    <li>A CPU começa a buscar instruções da RAM, uma por uma</li>
+    <li>Cada instrução é decodificada e executada</li>
+    <li>O resultado é mostrado na tela</li>
+  </ol>
+
+  <div class="diagram">
+    <div class="diagram-title">📋 Fluxo de Execução de um Programa</div>
+    <div class="diagram-container">
+      <div class="diagram-layer" style="background:linear-gradient(135deg,#f9731620,#c2410c10);border:2px solid #f9731640">
+        💿 SSD/HD — Programa armazenado
+      </div>
+      <div class="diagram-layer" style="background:linear-gradient(135deg,#22c55e20,#15803d10);border:2px solid #22c55e40">
+        💾 RAM — Programa carregado na memória
+      </div>
+      <div class="diagram-layer" style="background:linear-gradient(135deg,#3b82f620,#1d4ed810);border:2px solid #3b82f640">
+        🧠 CPU — Executa instruções uma a uma
+      </div>
+      <div class="diagram-layer" style="background:linear-gradient(135deg,#a855f720,#7c3aed10);border:2px solid #a855f740">
+        🖥️ Tela — Resultado visual para o usuário
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="content-section">
+  <h2>📐 Resumo Visual do Capítulo</h2>
+  <div class="diagram">
+    <div class="diagram-title">🗺️ Mapa Mental — Capítulo 1</div>
+    <div class="diagram-row">
+      <div class="diagram-box" style="min-width:200px">
+        🧠 CPU<br>
+        <small style="color:var(--text-muted)">
+        ├─ Cérebro do PC<br>
+        ├─ Fetch-Decode-Execute<br>
+        ├─ Bilhões de transistores<br>
+        └─ Velocidade: GHz
+        </small>
+      </div>
+      <span class="diagram-arrow">+</span>
+      <div class="diagram-box" style="min-width:200px">
+        💾 RAM<br>
+        <small style="color:var(--text-muted)">
+        ├─ Mesa de trabalho<br>
+        ├─ Volátil (temporária)<br>
+        ├─ Veloz, mas menor<br>
+        └─ GB de capacidade
+        </small>
+      </div>
+      <span class="diagram-arrow">+</span>
+      <div class="diagram-box" style="min-width:200px">
+        💿 SSD/HD<br>
+        <small style="color:var(--text-muted)">
+        ├─ Armazenamento<br>
+        ├─ Permanente<br>
+        ├─ Mais lento<br>
+        └─ TB de capacidade
+        </small>
+      </div>
+    </div>
+  </div>
+</div>
+
+    </div>
+  </main>
+
+  <!-- QUIZ -->
+  <section class="quiz-section" id="quiz">
+    <div class="container">
+      <h2>🧠 Quiz do Capítulo 1</h2>
+      <div id="quiz-container"></div>
+    </div>
+  </section>
+
+  <!-- FLASHCARDS -->
+  <section class="flashcards-section" id="flashcards">
+    <div class="container">
+      <h2>🎴 Flashcards</h2>
+      <div id="flashcards-container"></div>
+    </div>
+  </section>
+
+  <!-- DRAG & DROP -->
+  <section class="dragdrop-section" id="dragdrop">
+    <div class="container">
+      <h2>🎯 Desafio: Arraste e Solte</h2>
+      <div id="dragdrop-container"></div>
+    </div>
+  </section>
+
+  <!-- COMPLETAR -->
+  <section class="complete-section">
+    <div class="container">
+      <h2>🎉 Parabéns por chegar até aqui!</h2>
+      <p class="mb-3">Você completou o conteúdo do Capítulo 1. Não se esqueça de marcar como concluído e testar seus conhecimentos no quiz!</p>
+      <button class="btn btn-primary complete-btn" onclick="Progresso.concluirCapitulo(1); Progresso.notificar('🎉 Capítulo 1 concluído! +100 XP'); this.textContent='✅ Concluído'; this.disabled=true;">
+        ✓ Marcar Capítulo 1 como Concluído
+      </button>
+    </div>
+  </section>
+
+  <!-- NAVEGACAO ENTRE CAPITULOS -->
+  <div class="container">
+    <div class="chapter-footer-nav">
+      <span></span>
+      <a href="cap2.html">Próximo Capítulo →</a>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div class="container">
+      <p>Processador Desmistificado &copy; 2026</p>
+    </div>
+  </footer>
+
+  <script src="../js/main.js"></script>
+  <script>
+    
+    // ===== QUIZ DO CAPITULO 1 =====
+    const quizPerguntas = [
+  {
+    pergunta: "Qual é a função principal da CPU?",
+    opcoes: ["Armazenar arquivos permanentemente", "Processar instruções e executar operações", "Exibir imagens na tela", "Conectar à internet"],
+    correta: 1
+  },
+  {
+    pergunta: "O que significa RAM?",
+    opcoes: ["Random Access Memory", "Read And Modify", "Rapid Action Module", "Real-time Allocation Memory"],
+    correta: 0
+  },
+  {
+    pergunta: "Qual componente é VOLÁTIL (perde dados ao desligar)?",
+    opcoes: ["SSD", "HD", "RAM", "Placa de vídeo"],
+    correta: 2
+  },
+  {
+    pergunta: "Qual é a ordem correta do ciclo de execução?",
+    opcoes: ["Execute → Decode → Fetch", "Fetch → Decode → Execute", "Decode → Fetch → Execute", "Fetch → Execute → Decode"],
+    correta: 1
+  },
+  {
+    pergunta: "Onde o programa fica ARMAZENADO quando NÃO está em uso?",
+    opcoes: ["Na RAM", "Na CPU", "No SSD/HD", "Na placa-mãe"],
+    correta: 2
+  }
+];
+    Quiz.criar('quiz-container', quizPerguntas, 1);
+
+    
+    // ===== FLASHCARDS DO CAPITULO 1 =====
+    const flashcardsData = [
+  { frente: "O que é uma CPU?", verso: "Central Processing Unit — o 'cérebro' do computador que executa instruções e processa dados." },
+  { frente: "O que é RAM?", verso: "Random Access Memory — memória de trabalho volátil onde a CPU armazena dados temporariamente." },
+  { frente: "Qual a diferença entre RAM e SSD?", verso: "RAM é volátil (rápida, temporária) e SSD é permanente (mais lento, persistente)." },
+  { frente: "O que é o ciclo Fetch-Decode-Execute?", verso: "O ciclo básico da CPU: buscar instrução, decodificar o que fazer, e executar a operação." },
+  { frente: "Por que a CPU precisa da RAM?", verso: "A RAM serve como 'mesa de trabalho' onde a CPU coloca os dados que está processando no momento." }
+];
+    Flashcards.criar('flashcards-container', flashcardsData);
+
+    
+    // ===== DRAG & DROP DO CAPITULO 1 =====
+    const dragdropData = [
+  { alvo: "Componente mais rápido", item: "CPU" },
+  { alvo: "Memória temporária", item: "RAM" },
+  { alvo: "Armazenamento permanente", item: "SSD/HD" },
+  { alvo: "Executa instruções", item: "CPU" },
+  { alvo: "Perde dados ao desligar", item: "RAM" }
+];
+    DragDrop.criar('dragdrop-container', dragdropData, 1);
+
+  </script>
+</body>
+</html>

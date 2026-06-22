@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Capítulo 4 — Registradores | Processador Desmistificado</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <style>
+    /* ===== TEMA DO CAPITULO 4 ===== */
+    :root {
+      --cap-primary: #ef4444;
+      --cap-secondary: #f87171;
+    }
+
+    .chapter-header {
+      position: relative;
+      padding: 6rem 0 3rem;
+      overflow: hidden;
+    }
+    .chapter-header::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, #ef444420, #f8717110);
+    }
+    .chapter-header::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, #ef444460, transparent);
+    }
+    .chapter-header-content {
+      position: relative;
+      z-index: 1;
+    }
+    .chapter-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.4rem 1rem;
+      background: #ef444420;
+      border: 1px solid #ef444440;
+      border-radius: 100px;
+      font-size: 0.85rem;
+      color: #ef4444;
+      margin-bottom: 1rem;
+    }
+    .chapter-title {
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      font-weight: 800;
+      margin-bottom: 1rem;
+      background: linear-gradient(135deg, #ef4444, #f87171);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .chapter-desc {
+      font-size: 1.1rem;
+      color: var(--text-secondary);
+      max-width: 700px;
+    }
+
+    /* ===== NAVBAR DO CAPITULO ===== */
+    .chapter-nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 1000;
+      padding: 0.75rem 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--glass);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--glass-border);
+    }
+    .chapter-nav-back {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      text-decoration: none;
+      transition: var(--transition);
+    }
+    .chapter-nav-back:hover {
+      color: var(--text-primary);
+    }
+    .chapter-nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .chapter-nav-btn {
+      padding: 0.4rem 0.8rem;
+      border-radius: var(--radius-sm);
+      background: var(--bg-elevated);
+      border: 1px solid var(--glass-border);
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: var(--transition);
+      font-size: 0.85rem;
+    }
+    .chapter-nav-btn:hover {
+      background: var(--cap-primary);
+      color: white;
+      border-color: var(--cap-primary);
+    }
+
+    /* ===== CONTEUDO ===== */
+    .chapter-content {
+      padding: 3rem 0;
+    }
+    .content-section {
+      margin-bottom: 3rem;
+    }
+    .content-section h2 {
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid #ef444430;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .content-section h3 {
+      font-size: 1.2rem;
+      margin: 1.5rem 0 0.75rem;
+      color: var(--cap-primary);
+    }
+    .content-section p {
+      margin-bottom: 1rem;
+      line-height: 1.8;
+    }
+    .content-section ul {
+      margin-left: 1.5rem;
+      margin-bottom: 1rem;
+    }
+    .content-section li {
+      margin-bottom: 0.5rem;
+      color: var(--text-secondary);
+    }
+
+    /* ===== DIAGRAMAS ===== */
+    .diagram {
+      background: var(--bg-card);
+      border-radius: var(--radius-lg);
+      padding: 2rem;
+      margin: 1.5rem 0;
+      border: 1px solid var(--glass-border);
+      overflow-x: auto;
+    }
+    .diagram-title {
+      text-align: center;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+      color: var(--cap-primary);
+    }
+    .diagram-box {
+      display: inline-block;
+      padding: 1rem 1.5rem;
+      background: linear-gradient(135deg, #ef444420, #f8717110);
+      border: 2px solid #ef444440;
+      border-radius: var(--radius-md);
+      text-align: center;
+      font-weight: 600;
+      margin: 0.5rem;
+      min-width: 120px;
+    }
+    .diagram-arrow {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--cap-primary);
+      font-size: 1.5rem;
+      margin: 0 0.5rem;
+    }
+    .diagram-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin: 0.5rem 0;
+    }
+    .diagram-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .diagram-layer {
+      width: 100%;
+      max-width: 500px;
+      padding: 1rem;
+      border-radius: var(--radius-md);
+      text-align: center;
+      font-weight: 600;
+      position: relative;
+    }
+    .diagram-layer::after {
+      content: '↓';
+      position: absolute;
+      bottom: -20px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: var(--text-muted);
+      font-size: 1.2rem;
+    }
+    .diagram-layer:last-child::after {
+      display: none;
+    }
+
+    /* ===== CAIXAS ESPECIAIS ===== */
+    .info-box {
+      background: linear-gradient(135deg, #ef444410, #f8717105);
+      border-left: 4px solid var(--cap-primary);
+      border-radius: 0 var(--radius-md) var(--radius-md) 0;
+      padding: 1.25rem;
+      margin: 1.5rem 0;
+    }
+    .info-box-title {
+      font-weight: 700;
+      color: var(--cap-primary);
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .curiosity-box {
+      background: linear-gradient(135deg, rgba(245,158,11,0.1), rgba(245,158,11,0.05));
+      border-left: 4px solid #f59e0b;
+      border-radius: 0 var(--radius-md) var(--radius-md) 0;
+      padding: 1.25rem;
+      margin: 1.5rem 0;
+    }
+    .curiosity-box-title {
+      font-weight: 700;
+      color: #f59e0b;
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .warning-box {
+      background: linear-gradient(135deg, rgba(239,68,68,0.1), rgba(239,68,68,0.05));
+      border-left: 4px solid #ef4444;
+      border-radius: 0 var(--radius-md) var(--radius-md) 0;
+      padding: 1.25rem;
+      margin: 1.5rem 0;
+    }
+    .warning-box-title {
+      font-weight: 700;
+      color: #ef4444;
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    /* ===== QUIZ SECTION ===== */
+    .quiz-section {
+      background: linear-gradient(180deg, var(--bg-card), var(--bg-main));
+      padding: 3rem 0;
+      border-top: 1px solid var(--glass-border);
+    }
+    .quiz-section h2 {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    /* ===== FLASHCARDS SECTION ===== */
+    .flashcards-section {
+      padding: 3rem 0;
+      background: var(--bg-card);
+      border-top: 1px solid var(--glass-border);
+    }
+    .flashcards-section h2 {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    /* ===== DRAGDROP SECTION ===== */
+    .dragdrop-section {
+      padding: 3rem 0;
+      background: linear-gradient(180deg, var(--bg-main), var(--bg-card));
+      border-top: 1px solid var(--glass-border);
+    }
+    .dragdrop-section h2 {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    /* ===== COMPLETE SECTION ===== */
+    .complete-section {
+      padding: 3rem 0;
+      text-align: center;
+    }
+    .complete-btn {
+      padding: 1rem 2.5rem;
+      font-size: 1.1rem;
+    }
+
+    /* ===== FOOTER NAV ===== */
+    .chapter-footer-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 2rem 0;
+      border-top: 1px solid var(--glass-border);
+      margin-top: 3rem;
+    }
+    .chapter-footer-nav a {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.5rem;
+      background: var(--bg-card);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-md);
+      color: var(--text-secondary);
+      text-decoration: none;
+      transition: var(--transition);
+    }
+    .chapter-footer-nav a:hover {
+      background: var(--cap-primary);
+      color: white;
+      border-color: var(--cap-primary);
+    }
+
+    @media (max-width: 768px) {
+      .chapter-header { padding: 5rem 0 2rem; }
+      .chapter-footer-nav { flex-direction: column; gap: 1rem; }
+      .chapter-footer-nav a { width: 100%; justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+  <!-- ALTERE AQUI A NAVBAR DO CAPITULO -->
+  <nav class="chapter-nav">
+    <a href="../index.html" class="chapter-nav-back">
+      <span>←</span>
+      <span>Voltar ao Início</span>
+    </a>
+    <div class="chapter-nav-actions">
+      <button class="chapter-nav-btn" onclick="PainelPersonalizacao.abrir()">⚙️ Personalizar</button>
+      <button class="chapter-nav-btn" onclick="Progresso.concluirCapitulo(4); this.textContent='✅ Concluído'; this.disabled=true; Progresso.notificar('🎉 Capítulo 4 concluído! +100 XP');">✓ Marcar Concluído</button>
+    </div>
+  </nav>
+
+  <!-- HEADER DO CAPITULO -->
+  <header class="chapter-header">
+    <div class="container chapter-header-content">
+      <div class="chapter-badge">
+        <span>🔴</span>
+        <span>Capítulo 04</span>
+      </div>
+      <h1 class="chapter-title">Registradores</h1>
+      <p class="chapter-desc">🔴 Registradores — parte essencial da jornada para compreender o funcionamento interno do processador.</p>
+    </div>
+  </header>
+
+  <!-- CONTEUDO PRINCIPAL -->
+  <main class="chapter-content">
+    <div class="container">
+      
+<div class="content-section">
+  <h2>📦 O Que São Registradores?</h2>
+  <p>Registradores são as "mesas de trabalho" mais rápidas do computador. Eles ficam DENTRO da CPU e armazenam dados temporários que a CPU precisa acessar imediatamente.</p>
+
+  <div class="diagram">
+    <div class="diagram-title">⚡ Hierarquia de Velocidade</div>
+    <div style="display:flex;flex-direction:column;gap:0.5rem;max-width:500px;margin:0 auto">
+      <div class="diagram-box" style="width:100%;display:flex;justify-content:space-between;align-items:center;background:linear-gradient(135deg,#ef444420,#b91c1c10);border-color:#ef444440">
+        <span>⚡ Registradores</span>
+        <span style="color:var(--text-muted);font-size:0.85rem">~1 ciclo (0.3 ns)</span>
+      </div>
+      <div class="diagram-box" style="width:100%;display:flex;justify-content:space-between;align-items:center;background:linear-gradient(135deg,#f9731620,#c2410c10);border-color:#f9731640">
+        <span>💨 Cache L1</span>
+        <span style="color:var(--text-muted);font-size:0.85rem">~4 ciclos (1 ns)</span>
+      </div>
+      <div class="diagram-box" style="width:100%;display:flex;justify-content:space-between;align-items:center;background:linear-gradient(135deg,#eab30820,#a1620710);border-color:#eab30840">
+        <span>🚀 Cache L2/L3</span>
+        <span style="color:var(--text-muted);font-size:0.85rem">~10-40 ciclos</span>
+      </div>
+      <div class="diagram-box" style="width:100%;display:flex;justify-content:space-between;align-items:center;background:linear-gradient(135deg,#22c55e20,#15803d10);border-color:#22c55e40">
+        <span>💾 RAM</span>
+        <span style="color:var(--text-muted);font-size:0.85rem">~100-300 ciclos</span>
+      </div>
+      <div class="diagram-box" style="width:100%;display:flex;justify-content:space-between;align-items:center;background:linear-gradient(135deg,#3b82f620,#1d4ed810);border-color:#3b82f640">
+        <span>💿 SSD</span>
+        <span style="color:var(--text-muted);font-size:0.85rem">~10.000-100.000 ciclos</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="info-box">
+    <div class="info-box-title">💡 Por que são tão rápidos?</div>
+    <p>Registradores são feitos do mesmo material que a CPU (silício) e ficam no mesmo chip. Não há "viagem" pela placa-mãe. É como ter sua caneta na mão vs. ter que ir até a gaveta buscar.</p>
+  </div>
+</div>
+
+<div class="content-section">
+  <h2>📊 Registradores de Uso Geral (x86_64)</h2>
+  <p>Em arquitetura x86_64 (64-bit), os registradores de uso geral armazenam 64 bits (8 bytes) cada:</p>
+
+  <div class="diagram">
+    <div class="diagram-title">🗂️ Registradores de Uso Geral</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;max-width:600px;margin:0 auto">
+      <div class="diagram-box" style="text-align:left">
+        <strong>🅰️ RAX</strong><br>
+        <small style="color:var(--text-muted)">
+        Acumulador<br>
+        Resultado de operações<br>
+        Retorno de funções
+        </small>
+      </div>
+      <div class="diagram-box" style="text-align:left">
+        <strong>🅱️ RBX</strong><br>
+        <small style="color:var(--text-muted)">
+        Base<br>
+        Ponteiro para dados<br>
+        Uso geral preservado
+        </small>
+      </div>
+      <div class="diagram-box" style="text-align:left">
+        <strong>©️ RCX</strong><br>
+        <small style="color:var(--text-muted)">
+        Contador<br>
+        Loops (for, while)<br>
+        Shift/rotate counts
+        </small>
+      </div>
+      <div class="diagram-box" style="text-align:left">
+        <strong>🇩 RDX</strong><br>
+        <small style="color:var(--text-muted)">
+        Dados<br>
+        Multiplicação/divisão<br>
+        I/O port addresses
+        </small>
+      </div>
+    </div>
+  </div>
+
+  <pre><code>// Em C, quando você faz:
+int soma(int a, int b) {
+    return a + b;  // O resultado vai para RAX!
+}
+
+// Em Assembly x86_64 equivalente:
+// mov eax, edi      // a (1º argumento) vem em EDI
+// add eax, esi      // b (2º argumento) vem em ESI  
+// ret               // resultado em EAX (parte baixa de RAX)</code></pre>
+
+  <div class="curiosity-box">
+    <div class="curiosity-box-title">🤔 Curiosidade Histórica</div>
+    <p>Os nomes RAX, RBX, RCX, RDX vêm dos registradores de 8-bit da Intel 8080 (1974): A, B, C, D. O "R" de 64-bit veio depois, mas a função histórica permaneceu!</p>
+  </div>
+</div>
+
+<div class="content-section">
+  <h2>🎯 Registradores Especiais</h2>
+  <p>Além dos gerais, existem registradores com funções específicas e críticas:</p>
+
+  <div class="diagram">
+    <div class="diagram-title">⭐ Registradores Especiais</div>
+    <div style="display:flex;flex-direction:column;gap:0.75rem;max-width:550px;margin:0 auto">
+      <div class="diagram-box" style="width:100%;text-align:left;background:linear-gradient(135deg,#ef444420,#b91c1c10);border-color:#ef444440">
+        <strong>📍 RIP — Instruction Pointer</strong><br>
+        <small style="color:var(--text-muted)">Aponta para a PRÓXIMA instrução a ser executada. Controla o fluxo do programa. Não pode ser acessado diretamente pelo programador.</small>
+      </div>
+      <div class="diagram-box" style="width:100%;text-align:left;background:linear-gradient(135deg,#3b82f620,#1d4ed810);border-color:#3b82f640">
+        <strong>📚 RSP — Stack Pointer</strong><br>
+        <small style="color:var(--text-muted)">Aponta para o TOPO da pilha (stack). Muda a cada push/pop. Crítico para chamadas de função.</small>
+      </div>
+      <div class="diagram-box" style="width:100%;text-align:left;background:linear-gradient(135deg,#22c55e20,#15803d10);border-color:#22c55e40">
+        <strong>📐 RBP — Base Pointer</strong><br>
+        <small style="color:var(--text-muted)">Aponta para a BASE do stack frame atual. Usado para acessar variáveis locais e parâmetros de função.</small>
+      </div>
+      <div class="diagram-box" style="width:100%;text-align:left;background:linear-gradient(135deg,#f59e0b20,#d9770610);border-color:#f59e0b40">
+        <strong>🏁 RFLAGS — Flags</strong><br>
+        <small style="color:var(--text-muted)">Registrador de status. Contém flags como Zero (ZF), Carry (CF), Sign (SF), Overflow (OF). Usado em comparações e saltos condicionais.</small>
+      </div>
+    </div>
+  </div>
+
+  <pre><code>// Exemplo prático em C e Assembly:
+
+// C:
+if (a == b) {        // cmp eax, ebx
+    printf("Igual"); // jne .L_skip
+}                    // call printf
+                     // .L_skip:
+
+// A instrução CMP compara e seta flags no RFLAGS
+// JNE (Jump if Not Equal) lê a flag Zero (ZF)
+// Se ZF=1 (iguais), pula. Se ZF=0 (diferentes), continua.</code></pre>
+</div>
+
+<div class="content-section">
+  <h2>📐 Visualizando os Registradores</h2>
+  <p>Aqui está uma representação visual simplificada de como a CPU "enxerga" seus registradores:</p>
+
+  <div class="diagram">
+    <div class="diagram-title">🧠 Diagrama da CPU com Registradores</div>
+    <div style="background:var(--bg-elevated);border-radius:var(--radius-lg);padding:1.5rem;border:2px solid var(--glass-border);max-width:400px;margin:0 auto">
+      <div style="text-align:center;font-weight:700;margin-bottom:1rem;color:var(--primary-light)">CPU x86_64</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;font-family:var(--font-mono);font-size:0.8rem">
+        <div style="background:#ef444420;padding:0.5rem;border-radius:6px;text-align:center">RAX<br><small style="color:var(--text-muted)">00000000</small></div>
+        <div style="background:#3b82f620;padding:0.5rem;border-radius:6px;text-align:center">RBX<br><small style="color:var(--text-muted)">00000000</small></div>
+        <div style="background:#22c55e20;padding:0.5rem;border-radius:6px;text-align:center">RCX<br><small style="color:var(--text-muted)">00000000</small></div>
+        <div style="background:#a855f720;padding:0.5rem;border-radius:6px;text-align:center">RDX<br><small style="color:var(--text-muted)">00000000</small></div>
+        <div style="background:#f59e0b20;padding:0.5rem;border-radius:6px;text-align:center">RSP<br><small style="color:var(--text-muted)">7FFF...FF</small></div>
+        <div style="background:#06b6d420;padding:0.5rem;border-radius:6px;text-align:center">RBP<br><small style="color:var(--text-muted)">7FFF...00</small></div>
+        <div style="background:#ec489920;padding:0.5rem;border-radius:6px;text-align:center">RIP<br><small style="color:var(--text-muted)">00401000</small></div>
+        <div style="background:#f43f5e20;padding:0.5rem;border-radius:6px;text-align:center">RFLAGS<br><small style="color:var(--text-muted)">00000246</small></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="info-box">
+    <div class="info-box-title">💡 Relação com Programação em C</div>
+    <p>Quando você declara <code>int x = 10;</code>, o compilador decide se coloca <code>x</code> em um registrador (rápido) ou na pilha/heap (mais lento). Variáveis frequentemente usadas tendem a ficar em registradores automaticamente!</p>
+  </div>
+</div>
+
+<div class="content-section">
+  <h2>🗺️ Resumo Visual</h2>
+  <div class="diagram">
+    <div class="diagram-title">🧩 Mapa Mental — Registradores</div>
+    <div class="diagram-row">
+      <div class="diagram-box" style="min-width:200px">
+        <strong>📦 Registradores</strong><br>
+        <small style="color:var(--text-muted)">
+        ├─ Gerais: RAX, RBX, RCX, RDX<br>
+        ├─ Ponteiros: RIP, RSP, RBP<br>
+        ├─ Flags: RFLAGS<br>
+        └─ 64 bits cada (8 bytes)
+        </small>
+      </div>
+      <span class="diagram-arrow">=</span>
+      <div class="diagram-box" style="min-width:200px">
+        <strong>⚡ Mais Rápidos</strong><br>
+        <small style="color:var(--text-muted)">
+        ├─ Dentro da CPU<br>
+        ├─ ~1 ciclo de acesso<br>
+        ├─ Poucos disponíveis<br>
+        └─ Gerenciados pelo compilador
+        </small>
+      </div>
+    </div>
+  </div>
+</div>
+
+    </div>
+  </main>
+
+  <!-- QUIZ -->
+  <section class="quiz-section" id="quiz">
+    <div class="container">
+      <h2>🧠 Quiz do Capítulo 4</h2>
+      <div id="quiz-container"></div>
+    </div>
+  </section>
+
+  <!-- FLASHCARDS -->
+  <section class="flashcards-section" id="flashcards">
+    <div class="container">
+      <h2>🎴 Flashcards</h2>
+      <div id="flashcards-container"></div>
+    </div>
+  </section>
+
+  <!-- DRAG & DROP -->
+  <section class="dragdrop-section" id="dragdrop">
+    <div class="container">
+      <h2>🎯 Desafio: Arraste e Solte</h2>
+      <div id="dragdrop-container"></div>
+    </div>
+  </section>
+
+  <!-- COMPLETAR -->
+  <section class="complete-section">
+    <div class="container">
+      <h2>🎉 Parabéns por chegar até aqui!</h2>
+      <p class="mb-3">Você completou o conteúdo do Capítulo 4. Não se esqueça de marcar como concluído e testar seus conhecimentos no quiz!</p>
+      <button class="btn btn-primary complete-btn" onclick="Progresso.concluirCapitulo(4); Progresso.notificar('🎉 Capítulo 4 concluído! +100 XP'); this.textContent='✅ Concluído'; this.disabled=true;">
+        ✓ Marcar Capítulo 4 como Concluído
+      </button>
+    </div>
+  </section>
+
+  <!-- NAVEGACAO ENTRE CAPITULOS -->
+  <div class="container">
+    <div class="chapter-footer-nav">
+      <a href="cap3.html">← Capítulo Anterior</a>
+      <a href="cap5.html">Próximo Capítulo →</a>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div class="container">
+      <p>Processador Desmistificado &copy; 2026</p>
+    </div>
+  </footer>
+
+  <script src="../js/main.js"></script>
+  <script>
+    
+    // ===== QUIZ DO CAPITULO 4 =====
+    const quizPerguntas = [
+  {
+    pergunta: "Qual registrador armazena o resultado de operações aritméticas?",
+    opcoes: ["RBX", "RAX", "RSP", "RIP"],
+    correta: 1
+  },
+  {
+    pergunta: "O que o RIP faz?",
+    opcoes: ["Armazena dados temporários", "Aponta para a próxima instrução", "Controla a pilha", "Guarda flags de status"],
+    correta: 1
+  },
+  {
+    pergunta: "Qual registrador aponta para o TOPO da pilha?",
+    opcoes: ["RBP", "RAX", "RSP", "RCX"],
+    correta: 2
+  },
+  {
+    pergunta: "O que são as flags no registrador RFLAGS?",
+    opcoes: ["Marcadores de posição na memória", "Indicadores de status de operações", "Endereços de funções", "Valores de retorno"],
+    correta: 1
+  },
+  {
+    pergunta: "Quantos bits tem um registrador em arquitetura x86_64?",
+    opcoes: ["8 bits", "16 bits", "32 bits", "64 bits"],
+    correta: 3
+  }
+];
+    Quiz.criar('quiz-container', quizPerguntas, 4);
+
+    
+    // ===== FLASHCARDS DO CAPITULO 4 =====
+    const flashcardsData = [
+  { frente: "O que é um registrador?", verso: "Memória ultra-rápida DENTRO da CPU que armazena dados temporários para processamento imediato." },
+  { frente: "Qual a função do RAX?", verso: "Acumulador — armazena resultados de operações aritméticas e retorno de funções." },
+  { frente: "Qual a função do RCX?", verso: "Contador — usado em loops e operações de shift/rotate." },
+  { frente: "O que é o RSP?", verso: "Stack Pointer — aponta para o topo da pilha (stack). Muda a cada push/pop." },
+  { frente: "O que é o RFLAGS?", verso: "Registrador de flags/status — contém indicadores como Zero (ZF), Carry (CF), Sign (SF), Overflow (OF)." },
+  { frente: "Por que registradores são mais rápidos que RAM?", verso: "Ficam dentro do mesmo chip da CPU, eliminando a necessidade de buscar dados pela placa-mãe." }
+];
+    Flashcards.criar('flashcards-container', flashcardsData);
+
+    
+    // ===== DRAG & DROP DO CAPITULO 4 =====
+    const dragdropData = [
+  { alvo: "Acumulador / Resultados", item: "RAX" },
+  { alvo: "Contador de loops", item: "RCX" },
+  { alvo: "Próxima instrução", item: "RIP" },
+  { alvo: "Topo da pilha", item: "RSP" },
+  { alvo: "Base do stack frame", item: "RBP" },
+  { alvo: "Flags de status", item: "RFLAGS" }
+];
+    DragDrop.criar('dragdrop-container', dragdropData, 4);
+
+  </script>
+</body>
+</html>

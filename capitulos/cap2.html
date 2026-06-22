@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Capítulo 2 — Anatomia de uma CPU | Processador Desmistificado</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <style>
+    /* ===== TEMA DO CAPITULO 2 ===== */
+    :root {
+      --cap-primary: #22c55e;
+      --cap-secondary: #4ade80;
+    }
+
+    .chapter-header {
+      position: relative;
+      padding: 6rem 0 3rem;
+      overflow: hidden;
+    }
+    .chapter-header::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, #22c55e20, #4ade8010);
+    }
+    .chapter-header::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, #22c55e60, transparent);
+    }
+    .chapter-header-content {
+      position: relative;
+      z-index: 1;
+    }
+    .chapter-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.4rem 1rem;
+      background: #22c55e20;
+      border: 1px solid #22c55e40;
+      border-radius: 100px;
+      font-size: 0.85rem;
+      color: #22c55e;
+      margin-bottom: 1rem;
+    }
+    .chapter-title {
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      font-weight: 800;
+      margin-bottom: 1rem;
+      background: linear-gradient(135deg, #22c55e, #4ade80);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .chapter-desc {
+      font-size: 1.1rem;
+      color: var(--text-secondary);
+      max-width: 700px;
+    }
+
+    /* ===== NAVBAR DO CAPITULO ===== */
+    .chapter-nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 1000;
+      padding: 0.75rem 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--glass);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--glass-border);
+    }
+    .chapter-nav-back {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      text-decoration: none;
+      transition: var(--transition);
+    }
+    .chapter-nav-back:hover {
+      color: var(--text-primary);
+    }
+    .chapter-nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .chapter-nav-btn {
+      padding: 0.4rem 0.8rem;
+      border-radius: var(--radius-sm);
+      background: var(--bg-elevated);
+      border: 1px solid var(--glass-border);
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: var(--transition);
+      font-size: 0.85rem;
+    }
+    .chapter-nav-btn:hover {
+      background: var(--cap-primary);
+      color: white;
+      border-color: var(--cap-primary);
+    }
+
+    /* ===== CONTEUDO ===== */
+    .chapter-content {
+      padding: 3rem 0;
+    }
+    .content-section {
+      margin-bottom: 3rem;
+    }
+    .content-section h2 {
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid #22c55e30;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .content-section h3 {
+      font-size: 1.2rem;
+      margin: 1.5rem 0 0.75rem;
+      color: var(--cap-primary);
+    }
+    .content-section p {
+      margin-bottom: 1rem;
+      line-height: 1.8;
+    }
+    .content-section ul {
+      margin-left: 1.5rem;
+      margin-bottom: 1rem;
+    }
+    .content-section li {
+      margin-bottom: 0.5rem;
+      color: var(--text-secondary);
+    }
+
+    /* ===== DIAGRAMAS ===== */
+    .diagram {
+      background: var(--bg-card);
+      border-radius: var(--radius-lg);
+      padding: 2rem;
+      margin: 1.5rem 0;
+      border: 1px solid var(--glass-border);
+      overflow-x: auto;
+    }
+    .diagram-title {
+      text-align: center;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+      color: var(--cap-primary);
+    }
+    .diagram-box {
+      display: inline-block;
+      padding: 1rem 1.5rem;
+      background: linear-gradient(135deg, #22c55e20, #4ade8010);
+      border: 2px solid #22c55e40;
+      border-radius: var(--radius-md);
+      text-align: center;
+      font-weight: 600;
+      margin: 0.5rem;
+      min-width: 120px;
+    }
+    .diagram-arrow {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--cap-primary);
+      font-size: 1.5rem;
+      margin: 0 0.5rem;
+    }
+    .diagram-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin: 0.5rem 0;
+    }
+    .diagram-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .diagram-layer {
+      width: 100%;
+      max-width: 500px;
+      padding: 1rem;
+      border-radius: var(--radius-md);
+      text-align: center;
+      font-weight: 600;
+      position: relative;
+    }
+    .diagram-layer::after {
+      content: '↓';
+      position: absolute;
+      bottom: -20px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: var(--text-muted);
+      font-size: 1.2rem;
+    }
+    .diagram-layer:last-child::after {
+      display: none;
+    }
+
+    /* ===== CAIXAS ESPECIAIS ===== */
+    .info-box {
+      background: linear-gradient(135deg, #22c55e10, #4ade8005);
+      border-left: 4px solid var(--cap-primary);
+      border-radius: 0 var(--radius-md) var(--radius-md) 0;
+      padding: 1.25rem;
+      margin: 1.5rem 0;
+    }
+    .info-box-title {
+      font-weight: 700;
+      color: var(--cap-primary);
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .curiosity-box {
+      background: linear-gradient(135deg, rgba(245,158,11,0.1), rgba(245,158,11,0.05));
+      border-left: 4px solid #f59e0b;
+      border-radius: 0 var(--radius-md) var(--radius-md) 0;
+      padding: 1.25rem;
+      margin: 1.5rem 0;
+    }
+    .curiosity-box-title {
+      font-weight: 700;
+      color: #f59e0b;
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .warning-box {
+      background: linear-gradient(135deg, rgba(239,68,68,0.1), rgba(239,68,68,0.05));
+      border-left: 4px solid #ef4444;
+      border-radius: 0 var(--radius-md) var(--radius-md) 0;
+      padding: 1.25rem;
+      margin: 1.5rem 0;
+    }
+    .warning-box-title {
+      font-weight: 700;
+      color: #ef4444;
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    /* ===== QUIZ SECTION ===== */
+    .quiz-section {
+      background: linear-gradient(180deg, var(--bg-card), var(--bg-main));
+      padding: 3rem 0;
+      border-top: 1px solid var(--glass-border);
+    }
+    .quiz-section h2 {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    /* ===== FLASHCARDS SECTION ===== */
+    .flashcards-section {
+      padding: 3rem 0;
+      background: var(--bg-card);
+      border-top: 1px solid var(--glass-border);
+    }
+    .flashcards-section h2 {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    /* ===== DRAGDROP SECTION ===== */
+    .dragdrop-section {
+      padding: 3rem 0;
+      background: linear-gradient(180deg, var(--bg-main), var(--bg-card));
+      border-top: 1px solid var(--glass-border);
+    }
+    .dragdrop-section h2 {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    /* ===== COMPLETE SECTION ===== */
+    .complete-section {
+      padding: 3rem 0;
+      text-align: center;
+    }
+    .complete-btn {
+      padding: 1rem 2.5rem;
+      font-size: 1.1rem;
+    }
+
+    /* ===== FOOTER NAV ===== */
+    .chapter-footer-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 2rem 0;
+      border-top: 1px solid var(--glass-border);
+      margin-top: 3rem;
+    }
+    .chapter-footer-nav a {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.5rem;
+      background: var(--bg-card);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-md);
+      color: var(--text-secondary);
+      text-decoration: none;
+      transition: var(--transition);
+    }
+    .chapter-footer-nav a:hover {
+      background: var(--cap-primary);
+      color: white;
+      border-color: var(--cap-primary);
+    }
+
+    @media (max-width: 768px) {
+      .chapter-header { padding: 5rem 0 2rem; }
+      .chapter-footer-nav { flex-direction: column; gap: 1rem; }
+      .chapter-footer-nav a { width: 100%; justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+  <!-- ALTERE AQUI A NAVBAR DO CAPITULO -->
+  <nav class="chapter-nav">
+    <a href="../index.html" class="chapter-nav-back">
+      <span>←</span>
+      <span>Voltar ao Início</span>
+    </a>
+    <div class="chapter-nav-actions">
+      <button class="chapter-nav-btn" onclick="PainelPersonalizacao.abrir()">⚙️ Personalizar</button>
+      <button class="chapter-nav-btn" onclick="Progresso.concluirCapitulo(2); this.textContent='✅ Concluído'; this.disabled=true; Progresso.notificar('🎉 Capítulo 2 concluído! +100 XP');">✓ Marcar Concluído</button>
+    </div>
+  </nav>
+
+  <!-- HEADER DO CAPITULO -->
+  <header class="chapter-header">
+    <div class="container chapter-header-content">
+      <div class="chapter-badge">
+        <span>🟢</span>
+        <span>Capítulo 02</span>
+      </div>
+      <h1 class="chapter-title">Anatomia de uma CPU</h1>
+      <p class="chapter-desc">🟢 Anatomia de uma CPU — parte essencial da jornada para compreender o funcionamento interno do processador.</p>
+    </div>
+  </header>
+
+  <!-- CONTEUDO PRINCIPAL -->
+  <main class="chapter-content">
+    <div class="container">
+      
+<div class="content-section">
+  <h2>🔬 Componentes Internos da CPU</h2>
+  <p>Dentro de um processador moderno existem bilhões de transistores organizados em componentes especializados. Cada um tem uma função crucial. Vamos conhecer os principais:</p>
+
+  <div class="diagram">
+    <div class="diagram-title">🏗️ Anatomia da CPU</div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:0.75rem;max-width:500px;margin:0 auto">
+      <div class="diagram-box" style="width:100%;background:linear-gradient(135deg,#22c55e20,#15803d10);border-color:#22c55e40">
+        🧠 Unidade de Controle (CU)<br>
+        <small style="color:var(--text-muted)">O "diretor de orquestra" que coordena todas as operações</small>
+      </div>
+      <div style="display:flex;gap:0.75rem;width:100%">
+        <div class="diagram-box" style="flex:1;background:linear-gradient(135deg,#3b82f620,#1d4ed810);border-color:#3b82f640">
+          ➕ ALU<br>
+          <small style="color:var(--text-muted)">Aritmética e Lógica</small>
+        </div>
+        <div class="diagram-box" style="flex:1;background:linear-gradient(135deg,#a855f720,#7c3aed10);border-color:#a855f740">
+          🔢 FPU<br>
+          <small style="color:var(--text-muted)">Ponto Flutuante</small>
+        </div>
+      </div>
+      <div class="diagram-box" style="width:100%;background:linear-gradient(135deg,#f9731620,#c2410c10);border-color:#f9731640">
+        ⏱️ Clock<br>
+        <small style="color:var(--text-muted)">O "metrônomo" que sincroniza tudo</small>
+      </div>
+      <div class="diagram-box" style="width:100%;background:linear-gradient(135deg,#06b6d420,#0891b210);border-color:#06b6d440">
+        🚌 Barramentos<br>
+        <small style="color:var(--text-muted)">Caminhos de dados, controle e endereços</small>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="content-section">
+  <h2>🎛️ Unidade de Controle (CU)</h2>
+  <p>A CU é como o maestro de uma orquestra. Ela não executa cálculos diretamente, mas coordena TUDO:</p>
+  <ul>
+    <li><strong>Busca instruções:</strong> Determina qual instrução executar em seguida</li>
+    <li><strong>Decodifica:</strong> Interpreta o que cada instrução significa</li>
+    <li><strong>Coordena:</strong> Sinaliza para outros componentes quando agir</li>
+    <li><strong>Controla o fluxo:</strong> Decide se pula, repete ou continua sequencialmente</li>
+  </ul>
+
+  <div class="info-box">
+    <div class="info-box-title">💡 Analogia</div>
+    <p>Pense na CU como um chef de cozinha. O chef não cozinha cada prato sozinho, mas diz a cada cozinheiro (ALU, FPU, etc.) o que fazer e quando.</p>
+  </div>
+</div>
+
+<div class="content-section">
+  <h2>➕ Unidade Lógica e Aritmética (ALU)</h2>
+  <p>A ALU é a "calculadora" da CPU. É aqui que a matemática acontece:</p>
+  <ul>
+    <li><strong>Soma e Subtração:</strong> Operações aritméticas básicas</li>
+    <li><strong>AND, OR, NOT, XOR:</strong> Operações lógicas bit a bit</li>
+    <li><strong>Comparações:</strong> Verifica se A > B, A == B, A < B</li>
+    <li><strong>Deslocamento de bits:</strong> Move bits para esquerda ou direita</li>
+  </ul>
+
+  <div class="diagram">
+    <div class="diagram-title">⚙️ Operações da ALU</div>
+    <div class="diagram-row">
+      <div class="diagram-box">A + B<br><small>Soma</small></div>
+      <div class="diagram-box">A - B<br><small>Subtração</small></div>
+      <div class="diagram-box">A & B<br><small>AND</small></div>
+      <div class="diagram-box">A | B<br><small>OR</small></div>
+      <div class="diagram-box">A ^ B<br><small>XOR</small></div>
+      <div class="diagram-box">A == B<br><small>Comparação</small></div>
+    </div>
+  </div>
+
+  <div class="curiosity-box">
+    <div class="curiosity-box-title">🤔 Curiosidade</div>
+    <p>Todas as operações complexas que você faz no computador — desde jogos 3D até inteligência artificial — são, no fundo, milhões de operações simples da ALU executadas a velocidades incríveis.</p>
+  </div>
+</div>
+
+<div class="content-section">
+  <h2>🔢 Unidade de Ponto Flutuante (FPU)</h2>
+  <p>Enquanto a ALU trabalha com números inteiros, a FPU é especializada em números com casas decimais (como 3.14159):</p>
+  <ul>
+    <li>Cálculos científicos e de engenharia</li>
+    <li>Gráficos 3D e jogos</li>
+    <li>Processamento de áudio e vídeo</li>
+    <li>Machine Learning e IA</li>
+  </ul>
+
+  <pre><code>// Em C, quando você faz:
+double pi = 3.14159;
+double area = pi * raio * raio;  // A FPU processa isso!
+
+// A ALU não consegue lidar com decimais diretamente
+// A FPU é quem faz a mágica acontecer</code></pre>
+</div>
+
+<div class="content-section">
+  <h2>⏱️ Clock — O Metrônomo da CPU</h2>
+  <p>O clock é um sinal elétrico que oscila entre ligado e desligado bilhões de vezes por segundo. Cada oscilação completa é um <strong>ciclo de clock</strong>.</p>
+
+  <div class="diagram">
+    <div class="diagram-title">📈 Frequência do Clock</div>
+    <div style="display:flex;flex-direction:column;gap:0.5rem;max-width:400px;margin:0 auto">
+      <div class="diagram-box" style="width:100%;display:flex;justify-content:space-between;align-items:center">
+        <span>1 Hz</span>
+        <span style="color:var(--text-muted)">1 ciclo/segundo</span>
+      </div>
+      <div class="diagram-box" style="width:100%;display:flex;justify-content:space-between;align-items:center">
+        <span>1 kHz</span>
+        <span style="color:var(--text-muted)">1.000 ciclos/segundo</span>
+      </div>
+      <div class="diagram-box" style="width:100%;display:flex;justify-content:space-between;align-items:center">
+        <span>1 MHz</span>
+        <span style="color:var(--text-muted)">1.000.000 ciclos/segundo</span>
+      </div>
+      <div class="diagram-box" style="width:100%;display:flex;justify-content:space-between;align-items:center;background:linear-gradient(135deg,#f59e0b20,#d9770610);border-color:#f59e0b40">
+        <span>1 GHz</span>
+        <span style="color:var(--text-muted)">1.000.000.000 ciclos/segundo</span>
+      </div>
+    </div>
+  </div>
+
+  <p>Um processador de 3 GHz executa <strong>3 bilhões de ciclos por segundo</strong>! Em cada ciclo, a CPU pode executar uma ou mais instruções.</p>
+
+  <div class="warning-box">
+    <div class="warning-box-title">⚠️ Importante</div>
+    <p>Mais GHz não significa necessariamente mais velocidade real. A eficiência por ciclo (IPC — Instructions Per Clock) também importa muito. Um processador de 2 GHz com IPC alto pode ser mais rápido que um de 3 GHz com IPC baixo.</p>
+  </div>
+</div>
+
+<div class="content-section">
+  <h2>🚌 Barramentos Internos</h2>
+  <p>Barramentos são como "rodovias" dentro do processador e entre componentes:</p>
+
+  <div class="diagram">
+    <div class="diagram-title">🛣️ Tipos de Barramentos</div>
+    <div style="display:flex;flex-direction:column;gap:1rem;max-width:500px;margin:0 auto">
+      <div class="diagram-box" style="width:100%;text-align:left">
+        <strong>📊 Barramento de Dados</strong><br>
+        <small style="color:var(--text-muted)">Transporta os dados propriamente ditos. Largura determina quantos bits são transferidos de uma vez (32-bit, 64-bit).</small>
+      </div>
+      <div class="diagram-box" style="width:100%;text-align:left">
+        <strong>🎯 Barramento de Endereços</strong><br>
+        <small style="color:var(--text-muted)">Indica QUAL posição de memória será acessada. Quanto mais largo, mais memória a CPU pode endereçar.</small>
+      </div>
+      <div class="diagram-box" style="width:100%;text-align:left">
+        <strong>🎮 Barramento de Controle</strong><br>
+        <small style="color:var(--text-muted)">Sinais de comando: ler, escrever, interromper, resetar. Coordena as operações entre componentes.</small>
+      </div>
+    </div>
+  </div>
+
+  <div class="info-box">
+    <div class="info-box-title">💡 Relação com Programação</div>
+    <p>Quando você compila um programa em C para 64-bit, está dizendo ao compilador: "use o barramento de dados de 64 bits da CPU para transferir mais dados por vez." Isso torna o programa mais rápido em CPUs modernas.</p>
+  </div>
+</div>
+
+<div class="content-section">
+  <h2>🗺️ Resumo Visual</h2>
+  <div class="diagram">
+    <div class="diagram-title">🧩 Mapa Mental — Componentes da CPU</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;max-width:600px;margin:0 auto">
+      <div class="diagram-box" style="text-align:left">
+        <strong>🧠 CU</strong><br>
+        <small style="color:var(--text-muted)">Coordena tudo<br>Busca e decodifica<br>Controla fluxo</small>
+      </div>
+      <div class="diagram-box" style="text-align:left">
+        <strong>➕ ALU</strong><br>
+        <small style="color:var(--text-muted)">Soma e subtrai<br>Operações lógicas<br>Comparações</small>
+      </div>
+      <div class="diagram-box" style="text-align:left">
+        <strong>🔢 FPU</strong><br>
+        <small style="color:var(--text-muted)">Números decimais<br>Cálculos científicos<br>Gráficos 3D</small>
+      </div>
+      <div class="diagram-box" style="text-align:left">
+        <strong>⏱️ Clock</strong><br>
+        <small style="color:var(--text-muted)">Sincroniza operações<br>Medido em GHz<br>Ciclos por segundo</small>
+      </div>
+    </div>
+  </div>
+</div>
+
+    </div>
+  </main>
+
+  <!-- QUIZ -->
+  <section class="quiz-section" id="quiz">
+    <div class="container">
+      <h2>🧠 Quiz do Capítulo 2</h2>
+      <div id="quiz-container"></div>
+    </div>
+  </section>
+
+  <!-- FLASHCARDS -->
+  <section class="flashcards-section" id="flashcards">
+    <div class="container">
+      <h2>🎴 Flashcards</h2>
+      <div id="flashcards-container"></div>
+    </div>
+  </section>
+
+  <!-- DRAG & DROP -->
+  <section class="dragdrop-section" id="dragdrop">
+    <div class="container">
+      <h2>🎯 Desafio: Arraste e Solte</h2>
+      <div id="dragdrop-container"></div>
+    </div>
+  </section>
+
+  <!-- COMPLETAR -->
+  <section class="complete-section">
+    <div class="container">
+      <h2>🎉 Parabéns por chegar até aqui!</h2>
+      <p class="mb-3">Você completou o conteúdo do Capítulo 2. Não se esqueça de marcar como concluído e testar seus conhecimentos no quiz!</p>
+      <button class="btn btn-primary complete-btn" onclick="Progresso.concluirCapitulo(2); Progresso.notificar('🎉 Capítulo 2 concluído! +100 XP'); this.textContent='✅ Concluído'; this.disabled=true;">
+        ✓ Marcar Capítulo 2 como Concluído
+      </button>
+    </div>
+  </section>
+
+  <!-- NAVEGACAO ENTRE CAPITULOS -->
+  <div class="container">
+    <div class="chapter-footer-nav">
+      <a href="cap1.html">← Capítulo Anterior</a>
+      <a href="cap3.html">Próximo Capítulo →</a>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div class="container">
+      <p>Processador Desmistificado &copy; 2026</p>
+    </div>
+  </footer>
+
+  <script src="../js/main.js"></script>
+  <script>
+    
+    // ===== QUIZ DO CAPITULO 2 =====
+    const quizPerguntas = [
+  {
+    pergunta: "Qual componente da CPU coordena todas as operações?",
+    opcoes: ["ALU", "FPU", "Unidade de Controle (CU)", "Cache L1"],
+    correta: 2
+  },
+  {
+    pergunta: "A ALU é responsável por qual tipo de operação?",
+    opcoes: ["Apenas soma", "Apenas comparação", "Operações aritméticas e lógicas", "Gerenciamento de memória"],
+    correta: 2
+  },
+  {
+    pergunta: "Para que serve a FPU?",
+    opcoes: ["Controlar o clock", "Processar números com casas decimais", "Gerenciar interrupções", "Acessar a RAM"],
+    correta: 1
+  },
+  {
+    pergunta: "O que significa 3 GHz?",
+    opcoes: ["3 gigabytes de memória", "3 bilhões de ciclos por segundo", "3 núcleos", "3 threads"],
+    correta: 1
+  },
+  {
+    pergunta: "Qual barramento indica QUAL posição de memória acessar?",
+    opcoes: ["Barramento de Dados", "Barramento de Controle", "Barramento de Endereços", "Barramento de Cache"],
+    correta: 2
+  }
+];
+    Quiz.criar('quiz-container', quizPerguntas, 2);
+
+    
+    // ===== FLASHCARDS DO CAPITULO 2 =====
+    const flashcardsData = [
+  { frente: "O que faz a Unidade de Controle (CU)?", verso: "Coordena todas as operações da CPU: busca instruções, decodifica e sinaliza outros componentes." },
+  { frente: "O que é a ALU?", verso: "Arithmetic Logic Unit — executa operações matemáticas (soma, subtração) e lógicas (AND, OR, XOR)." },
+  { frente: "Qual a diferença entre ALU e FPU?", verso: "ALU trabalha com números inteiros. FPU (Floating Point Unit) trabalha com números decimais." },
+  { frente: "O que é o clock da CPU?", verso: "Um sinal elétrico que oscila bilhões de vezes por segundo, sincronizando todas as operações. Medido em GHz." },
+  { frente: "Quais são os 3 tipos de barramentos?", verso: "Dados (transporta dados), Endereços (indica posição de memória) e Controle (sinais de comando)." }
+];
+    Flashcards.criar('flashcards-container', flashcardsData);
+
+    
+    // ===== DRAG & DROP DO CAPITULO 2 =====
+    const dragdropData = [
+  { alvo: "Coordena operações", item: "CU" },
+  { alvo: "Soma e subtrai", item: "ALU" },
+  { alvo: "Números decimais", item: "FPU" },
+  { alvo: "Sincroniza tudo", item: "Clock" },
+  { alvo: "Transporta dados", item: "Barramento de Dados" }
+];
+    DragDrop.criar('dragdrop-container', dragdropData, 2);
+
+  </script>
+</body>
+</html>

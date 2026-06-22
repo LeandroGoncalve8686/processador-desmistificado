@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Capítulo 10 — Interrupções | Processador Desmistificado</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <style>
+    :root { --cap-primary: #14b8a6; --cap-secondary: #2dd4bf; }
+    .chapter-header { position: relative; padding: 6rem 0 3rem; overflow: hidden; }
+    .chapter-header::before { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, #14b8a620, #2dd4bf10); }
+    .chapter-header::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, #14b8a660, transparent); }
+    .chapter-header-content { position: relative; z-index: 1; }
+    .chapter-badge { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.4rem 1rem; background: #14b8a620; border: 1px solid #14b8a640; border-radius: 100px; font-size: 0.85rem; color: #14b8a6; margin-bottom: 1rem; }
+    .chapter-title { font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 800; margin-bottom: 1rem; background: linear-gradient(135deg, #14b8a6, #2dd4bf); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .chapter-desc { font-size: 1.1rem; color: var(--text-secondary); max-width: 700px; }
+    .chapter-nav { position: fixed; top: 0; left: 0; right: 0; z-index: 1000; padding: 0.75rem 1.5rem; display: flex; justify-content: space-between; align-items: center; background: var(--glass); backdrop-filter: blur(20px); border-bottom: 1px solid var(--glass-border); }
+    .chapter-nav-back { display: flex; align-items: center; gap: 0.5rem; color: var(--text-secondary); font-size: 0.9rem; text-decoration: none; transition: var(--transition); }
+    .chapter-nav-back:hover { color: var(--text-primary); }
+    .chapter-nav-actions { display: flex; align-items: center; gap: 0.5rem; }
+    .chapter-nav-btn { padding: 0.4rem 0.8rem; border-radius: var(--radius-sm); background: var(--bg-elevated); border: 1px solid var(--glass-border); color: var(--text-secondary); cursor: pointer; transition: var(--transition); font-size: 0.85rem; }
+    .chapter-nav-btn:hover { background: var(--cap-primary); color: white; border-color: var(--cap-primary); }
+    .chapter-content { padding: 3rem 0; }
+    .content-section { margin-bottom: 3rem; }
+    .content-section h2 { font-size: 1.5rem; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 2px solid #14b8a630; display: flex; align-items: center; gap: 0.75rem; }
+    .content-section h3 { font-size: 1.2rem; margin: 1.5rem 0 0.75rem; color: var(--cap-primary); }
+    .content-section p { margin-bottom: 1rem; line-height: 1.8; }
+    .content-section ul { margin-left: 1.5rem; margin-bottom: 1rem; }
+    .content-section li { margin-bottom: 0.5rem; color: var(--text-secondary); }
+    .diagram { background: var(--bg-card); border-radius: var(--radius-lg); padding: 2rem; margin: 1.5rem 0; border: 1px solid var(--glass-border); overflow-x: auto; }
+    .diagram-title { text-align: center; font-weight: 600; margin-bottom: 1.5rem; color: var(--cap-primary); }
+    .diagram-box { display: inline-block; padding: 1rem 1.5rem; background: linear-gradient(135deg, #14b8a620, #2dd4bf10); border: 2px solid #14b8a640; border-radius: var(--radius-md); text-align: center; font-weight: 600; margin: 0.5rem; min-width: 120px; }
+    .diagram-arrow { display: inline-flex; align-items: center; justify-content: center; color: var(--cap-primary); font-size: 1.5rem; margin: 0 0.5rem; }
+    .diagram-row { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 0.5rem; margin: 0.5rem 0; }
+    .diagram-container { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; }
+    .diagram-layer { width: 100%; max-width: 500px; padding: 1rem; border-radius: var(--radius-md); text-align: center; font-weight: 600; position: relative; }
+    .diagram-layer::after { content: '↓'; position: absolute; bottom: -20px; left: 50%; transform: translateX(-50%); color: var(--text-muted); font-size: 1.2rem; }
+    .diagram-layer:last-child::after { display: none; }
+    .info-box { background: linear-gradient(135deg, #14b8a610, #2dd4bf05); border-left: 4px solid var(--cap-primary); border-radius: 0 var(--radius-md) var(--radius-md) 0; padding: 1.25rem; margin: 1.5rem 0; }
+    .info-box-title { font-weight: 700; color: var(--cap-primary); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; }
+    .curiosity-box { background: linear-gradient(135deg, rgba(245,158,11,0.1), rgba(245,158,11,0.05)); border-left: 4px solid #f59e0b; border-radius: 0 var(--radius-md) var(--radius-md) 0; padding: 1.25rem; margin: 1.5rem 0; }
+    .curiosity-box-title { font-weight: 700; color: #f59e0b; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; }
+    .warning-box { background: linear-gradient(135deg, rgba(239,68,68,0.1), rgba(239,68,68,0.05)); border-left: 4px solid #ef4444; border-radius: 0 var(--radius-md) var(--radius-md) 0; padding: 1.25rem; margin: 1.5rem 0; }
+    .warning-box-title { font-weight: 700; color: #ef4444; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; }
+    .quiz-section { background: linear-gradient(180deg, var(--bg-card), var(--bg-main)); padding: 3rem 0; border-top: 1px solid var(--glass-border); }
+    .quiz-section h2 { text-align: center; margin-bottom: 2rem; }
+    .flashcards-section { padding: 3rem 0; background: var(--bg-card); border-top: 1px solid var(--glass-border); }
+    .flashcards-section h2 { text-align: center; margin-bottom: 2rem; }
+    .dragdrop-section { padding: 3rem 0; background: linear-gradient(180deg, var(--bg-main), var(--bg-card)); border-top: 1px solid var(--glass-border); }
+    .dragdrop-section h2 { text-align: center; margin-bottom: 2rem; }
+    .complete-section { padding: 3rem 0; text-align: center; }
+    .complete-btn { padding: 1rem 2.5rem; font-size: 1.1rem; }
+    .chapter-footer-nav { display: flex; justify-content: space-between; align-items: center; padding: 2rem 0; border-top: 1px solid var(--glass-border); margin-top: 3rem; }
+    .chapter-footer-nav a { display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.5rem; background: var(--bg-card); border: 1px solid var(--glass-border); border-radius: var(--radius-md); color: var(--text-secondary); text-decoration: none; transition: var(--transition); }
+    .chapter-footer-nav a:hover { background: var(--cap-primary); color: white; border-color: var(--cap-primary); }
+    .footer { padding: 3rem 0; border-top: 1px solid var(--glass-border); text-align: center; }
+    .footer p { color: var(--text-muted); font-size: 0.9rem; }
+    @media (max-width: 768px) { .chapter-header { padding: 5rem 0 2rem; } .chapter-footer-nav { flex-direction: column; gap: 1rem; } .chapter-footer-nav a { width: 100%; justify-content: center; } }
+  </style>
+</head>
+<body>
+  <nav class="chapter-nav">
+    <a href="../index.html" class="chapter-nav-back"><span>←</span><span>Voltar ao Início</span></a>
+    <div class="chapter-nav-actions">
+      <button class="chapter-nav-btn" onclick="PainelPersonalizacao.abrir()">⚙️ Personalizar</button>
+      <button class="chapter-nav-btn" onclick="Progresso.concluirCapitulo(10); this.textContent='✅ Concluído'; this.disabled=true; Progresso.notificar('🎉 Capítulo 10 concluído! +100 XP');">✓ Marcar Concluído</button>
+    </div>
+  </nav>
+  <header class="chapter-header">
+    <div class="container chapter-header-content">
+      <div class="chapter-badge"><span>🟢</span><span>Capítulo 10</span></div>
+      <h1 class="chapter-title">Interrupções</h1>
+      <p class="chapter-desc">🟢 Interrupções — parte essencial da jornada para compreender o funcionamento interno do processador.</p>
+    </div>
+  </header>
+  <main class="chapter-content"><div class="container">
+<div class="content-section">
+  <h2>🔔 O Que é uma Interrupção?</h2>
+  <p>Uma interrupção é um sinal que faz a CPU PAUSAR o que está fazendo para atender a algo mais urgente. É como um telefone tocando enquanto você cozinha — você para o fogão, atende o telefone, e depois volta a cozinhar.</p>
+
+  <div class="diagram">
+    <div class="diagram-title">📞 Analogia da Interrupção</div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:0.5rem;max-width:500px;margin:0 auto">
+      <div class="diagram-box" style="width:100%;background:linear-gradient(135deg,#22c55e20,#15803d10);border-color:#22c55e40">
+        🍳 CPU executando programa normalmente
+      </div>
+      <span class="diagram-arrow">↓</span>
+      <div class="diagram-box" style="width:100%;background:linear-gradient(135deg,#ef444420,#b91c1c10);border-color:#ef444440">
+        🔔 INTERRUPÇÃO! (teclado, timer, disco...)
+      </div>
+      <span class="diagram-arrow">↓</span>
+      <div class="diagram-box" style="width:100%;background:linear-gradient(135deg,#f59e0b20,#d9770610);border-color:#f59e0b40">
+        💾 Salva estado atual (registradores) na stack
+      </div>
+      <span class="diagram-arrow">↓</span>
+      <div class="diagram-box" style="width:100%;background:linear-gradient(135deg,#3b82f620,#1d4ed810);border-color:#3b82f640">
+        ⚡ Executa rotina de tratamento da interrupção
+      </div>
+      <span class="diagram-arrow">↓</span>
+      <div class="diagram-box" style="width:100%;background:linear-gradient(135deg,#a855f720,#7c3aed10);border-color:#a855f740">
+        🔄 Restaura estado e volta ao programa
+      </div>
+    </div>
+  </div>
+
+  <div class="info-box">
+    <div class="info-box-title">💡 Por que interrupções existem?</div>
+    <p>Sem interrupções, a CPU teria que ficar verificando constantemente se o teclado foi pressionado, se o disco terminou de ler, se a rede recebeu pacotes... Isso seria um desperdício enorme. Com interrupções, a CPU trabalha normalmente e SÓ reage quando algo acontece.</p>
+  </div>
+</div>
+
+<div class="content-section">
+  <h2>🖱️ Tipos de Interrupções</h2>
+  <p>Interrupções podem vir de várias fontes:</p>
+
+  <div class="diagram">
+    <div class="diagram-title">🔌 Fontes de Interrupção</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;max-width:600px;margin:0 auto">
+      <div class="diagram-box" style="text-align:left;background:linear-gradient(135deg,#3b82f620,#1d4ed810);border-color:#3b82f640">
+        <strong>⌨️ Teclado</strong><br>
+        <small style="color:var(--text-muted)">Quando você pressiona uma tecla, o controlador do teclado envia uma interrupção para a CPU processar o caractere.</small>
+      </div>
+      <div class="diagram-box" style="text-align:left;background:linear-gradient(135deg,#22c55e20,#15803d10);border-color:#22c55e40">
+        <strong>🖱️ Mouse</strong><br>
+        <small style="color:var(--text-muted)">Movimentos e cliques geram interrupções constantes para atualizar o cursor na tela.</small>
+      </div>
+      <div class="diagram-box" style="text-align:left;background:linear-gradient(135deg,#f9731620,#c2410c10);border-color:#f9731640">
+        <strong>💿 Disco (SSD/HD)</strong><br>
+        <small style="color:var(--text-muted)">Quando uma leitura/escrita termina, o disco interrompe a CPU para entregar os dados.</small>
+      </div>
+      <div class="diagram-box" style="text-align:left;background:linear-gradient(135deg,#a855f720,#7c3aed10);border-color:#a855f740">
+        <strong>🌐 Rede</strong><br>
+        <small style="color:var(--text-muted)">Pacotes de rede chegando geram interrupções para processamento imediato.</small>
+      </div>
+      <div class="diagram-box" style="text-align:left;background:linear-gradient(135deg,#f59e0b20,#d9770610);border-color:#f59e0b40;grid-column:span 2">
+        <strong>⏱️ Timer (Relógio)</strong><br>
+        <small style="color:var(--text-muted)">Interrompe a CPU milhares de vezes por segundo para permitir multitarefa (escalonamento de processos). Essencial para o funcionamento do sistema operacional!</small>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="content-section">
+  <h2>⚙️ Fluxo Completo de uma Interrupção</h2>
+  <p>Vamos acompanhar o que acontece quando você pressiona uma tecla:</p>
+
+  <pre><code>// Passo a passo de uma interrupção de teclado:
+
+1. Você pressiona 'A'
+   ↓
+2. Controlador do teclado detecta o evento
+   ↓
+3. Controlador envia sinal de interrupção (IRQ1) para a CPU
+   ↓
+4. CPU PAUSA o programa atual
+   ↓
+5. CPU salva registradores (RAX, RBX, RFLAGS...) na stack
+   ↓
+6. CPU consulta a IDT (Interrupt Descriptor Table)
+   ↓
+7. CPU salta para a rotina de tratamento (handler)
+   ↓
+8. Handler lê o scan code da tecla do controlador
+   ↓
+9. Handler converte scan code para caractere ASCII
+   ↓
+10. Handler entrega o caractere ao sistema operacional
+   ↓
+11. SO coloca o caractere no buffer do terminal
+   ↓
+12. CPU restaura registradores da stack
+   ↓
+13. CPU retorna ao programa original (IRET)
+
+// Tudo isso acontece em MICROSSEGUNDOS!</code></pre>
+
+  <div class="curiosity-box">
+    <div class="curiosity-box-title">🤔 Curiosidade</div>
+    <p>Em Linux, você pode ver as interrupções que ocorrem com o comando <code>cat /proc/interrupts</code>. Cada linha mostra quantas vezes cada dispositivo interrompeu cada núcleo da CPU!</p>
+  </div>
+</div>
+
+<div class="content-section">
+  <h2>🗺️ Resumo Visual</h2>
+  <div class="diagram">
+    <div class="diagram-title">🧩 Mapa Mental — Interrupções</div>
+    <div class="diagram-row">
+      <div class="diagram-box" style="min-width:200px">
+        <strong>🔔 Interrupção</strong><br>
+        <small style="color:var(--text-muted)">
+        ├─ Pausa programa<br>
+        ├─ Salva estado<br>
+        ├─ Executa handler<br>
+        └─ Restaura e retorna
+        </small>
+      </div>
+      <span class="diagram-arrow">+</span>
+      <div class="diagram-box" style="min-width:200px">
+        <strong>🔌 Fontes</strong><br>
+        <small style="color:var(--text-muted)">
+        ├─ Teclado/Mouse<br>
+        ├─ Disco/Rede<br>
+        ├─ Timer (SO)<br>
+        └─ Software (syscalls)
+        </small>
+      </div>
+    </div>
+  </div>
+</div>
+</div></main>
+  <section class="quiz-section" id="quiz"><div class="container"><h2>🧠 Quiz do Capítulo 10</h2><div id="quiz-container"></div></div></section>
+  <section class="flashcards-section" id="flashcards"><div class="container"><h2>🎴 Flashcards</h2><div id="flashcards-container"></div></div></section>
+  <section class="dragdrop-section" id="dragdrop"><div class="container"><h2>🎯 Desafio: Arraste e Solte</h2><div id="dragdrop-container"></div></div></section>
+  <section class="complete-section"><div class="container"><h2>🎉 Parabéns por chegar até aqui!</h2><p class="mb-3">Você completou o conteúdo do Capítulo 10. Não se esqueça de marcar como concluído!</p><button class="btn btn-primary complete-btn" onclick="Progresso.concluirCapitulo(10); Progresso.notificar('🎉 Capítulo 10 concluído! +100 XP'); this.textContent='✅ Concluído'; this.disabled=true;">✓ Marcar Capítulo 10 como Concluído</button></div></section>
+  <div class="container"><div class="chapter-footer-nav"><a href="cap9.html">← Capítulo Anterior</a><a href="cap11.html">Próximo Capítulo →</a></div></div>
+  <footer class="footer"><div class="container"><p>Processador Desmistificado &copy; 2026</p></div></footer>
+  <script src="../js/main.js"></script>
+  <script>
+    const quizPerguntas = [
+  {
+    pergunta: "O que é uma interrupção?",
+    opcoes: ["Um erro no programa", "Um sinal que faz a CPU pausar para atender algo urgente", "Um tipo de memória", "Um barramento de dados"],
+    correta: 1
+  },
+  {
+    pergunta: "Qual interrupção é ESSENCIAL para multitarefa?",
+    opcoes: ["Teclado", "Mouse", "Timer", "Rede"],
+    correta: 2
+  },
+  {
+    pergunta: "O que a CPU faz PRIMEIRO ao receber uma interrupção?",
+    opcoes: ["Executa o handler imediatamente", "Salva o estado atual (registradores)", "Ignora se estiver ocupada", "Reinicia o computador"],
+    correta: 1
+  },
+  {
+    pergunta: "Onde a CPU salva os registradores durante uma interrupção?",
+    opcoes: ["Na RAM", "Na Heap", "Na Stack (Pilha)", "Em registradores especiais"],
+    correta: 2
+  },
+  {
+    pergunta: "Qual comando Linux mostra estatísticas de interrupções?",
+    opcoes: ["top", "ps", "cat /proc/interrupts", "lsirq"],
+    correta: 2
+  }
+];
+    Quiz.criar('quiz-container', quizPerguntas, 10);
+
+    const flashcardsData = [
+  { frente: "O que é uma interrupção?", verso: "Um sinal que faz a CPU pausar o programa atual para atender a um evento mais urgente (teclado, disco, timer, etc.)." },
+  { frente: "Por que interrupções são necessárias?", verso: "Evitam que a CPU fique verificando constantemente dispositivos (polling), economizando processamento." },
+  { frente: "O que a CPU faz ao receber uma interrupção?", verso: "1) Salva registradores na stack, 2) Consulta IDT, 3) Executa handler, 4) Restaura estado, 5) Retorna ao programa." },
+  { frente: "Qual a importância do Timer?", verso: "Interrompe a CPU milhares de vezes por segundo, permitindo que o SO alterne entre processos (multitarefa)." },
+  { frente: "O que é a IDT?", verso: "Interrupt Descriptor Table — tabela que mapeia cada tipo de interrupção para o endereço do handler correspondente." }
+];
+    Flashcards.criar('flashcards-container', flashcardsData);
+
+    const dragdropData = [
+  { alvo: "Faz CPU pausar programa", item: "Interrupção" },
+  { alvo: "Salva estado da CPU", item: "Stack" },
+  { alvo: "Tabela de handlers", item: "IDT" },
+  { alvo: "Essencial para multitarefa", item: "Timer" },
+  { alvo: "Tecla pressionada", item: "IRQ do Teclado" }
+];
+    DragDrop.criar('dragdrop-container', dragdropData, 10);
+</script>
+</body>
+</html>

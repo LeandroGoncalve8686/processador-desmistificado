@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Capítulo 13 — CPU e Linguagem C | Processador Desmistificado</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <style>
+    :root { --cap-primary: #0ea5e9; --cap-secondary: #38bdf8; }
+    .chapter-header { position: relative; padding: 6rem 0 3rem; overflow: hidden; }
+    .chapter-header::before { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, #0ea5e920, #38bdf810); }
+    .chapter-header::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, #0ea5e960, transparent); }
+    .chapter-header-content { position: relative; z-index: 1; }
+    .chapter-badge { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.4rem 1rem; background: #0ea5e920; border: 1px solid #0ea5e940; border-radius: 100px; font-size: 0.85rem; color: #0ea5e9; margin-bottom: 1rem; }
+    .chapter-title { font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 800; margin-bottom: 1rem; background: linear-gradient(135deg, #0ea5e9, #38bdf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .chapter-desc { font-size: 1.1rem; color: var(--text-secondary); max-width: 700px; }
+    .chapter-nav { position: fixed; top: 0; left: 0; right: 0; z-index: 1000; padding: 0.75rem 1.5rem; display: flex; justify-content: space-between; align-items: center; background: var(--glass); backdrop-filter: blur(20px); border-bottom: 1px solid var(--glass-border); }
+    .chapter-nav-back { display: flex; align-items: center; gap: 0.5rem; color: var(--text-secondary); font-size: 0.9rem; text-decoration: none; transition: var(--transition); }
+    .chapter-nav-back:hover { color: var(--text-primary); }
+    .chapter-nav-actions { display: flex; align-items: center; gap: 0.5rem; }
+    .chapter-nav-btn { padding: 0.4rem 0.8rem; border-radius: var(--radius-sm); background: var(--bg-elevated); border: 1px solid var(--glass-border); color: var(--text-secondary); cursor: pointer; transition: var(--transition); font-size: 0.85rem; }
+    .chapter-nav-btn:hover { background: var(--cap-primary); color: white; border-color: var(--cap-primary); }
+    .chapter-content { padding: 3rem 0; }
+    .content-section { margin-bottom: 3rem; }
+    .content-section h2 { font-size: 1.5rem; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 2px solid #0ea5e930; display: flex; align-items: center; gap: 0.75rem; }
+    .content-section h3 { font-size: 1.2rem; margin: 1.5rem 0 0.75rem; color: var(--cap-primary); }
+    .content-section p { margin-bottom: 1rem; line-height: 1.8; }
+    .content-section ul { margin-left: 1.5rem; margin-bottom: 1rem; }
+    .content-section li { margin-bottom: 0.5rem; color: var(--text-secondary); }
+    .diagram { background: var(--bg-card); border-radius: var(--radius-lg); padding: 2rem; margin: 1.5rem 0; border: 1px solid var(--glass-border); overflow-x: auto; }
+    .diagram-title { text-align: center; font-weight: 600; margin-bottom: 1.5rem; color: var(--cap-primary); }
+    .diagram-box { display: inline-block; padding: 1rem 1.5rem; background: linear-gradient(135deg, #0ea5e920, #38bdf810); border: 2px solid #0ea5e940; border-radius: var(--radius-md); text-align: center; font-weight: 600; margin: 0.5rem; min-width: 120px; }
+    .diagram-arrow { display: inline-flex; align-items: center; justify-content: center; color: var(--cap-primary); font-size: 1.5rem; margin: 0 0.5rem; }
+    .diagram-row { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 0.5rem; margin: 0.5rem 0; }
+    .diagram-container { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; }
+    .diagram-layer { width: 100%; max-width: 500px; padding: 1rem; border-radius: var(--radius-md); text-align: center; font-weight: 600; position: relative; }
+    .diagram-layer::after { content: '↓'; position: absolute; bottom: -20px; left: 50%; transform: translateX(-50%); color: var(--text-muted); font-size: 1.2rem; }
+    .diagram-layer:last-child::after { display: none; }
+    .info-box { background: linear-gradient(135deg, #0ea5e910, #38bdf805); border-left: 4px solid var(--cap-primary); border-radius: 0 var(--radius-md) var(--radius-md) 0; padding: 1.25rem; margin: 1.5rem 0; }
+    .info-box-title { font-weight: 700; color: var(--cap-primary); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; }
+    .curiosity-box { background: linear-gradient(135deg, rgba(245,158,11,0.1), rgba(245,158,11,0.05)); border-left: 4px solid #f59e0b; border-radius: 0 var(--radius-md) var(--radius-md) 0; padding: 1.25rem; margin: 1.5rem 0; }
+    .curiosity-box-title { font-weight: 700; color: #f59e0b; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; }
+    .warning-box { background: linear-gradient(135deg, rgba(239,68,68,0.1), rgba(239,68,68,0.05)); border-left: 4px solid #ef4444; border-radius: 0 var(--radius-md) var(--radius-md) 0; padding: 1.25rem; margin: 1.5rem 0; }
+    .warning-box-title { font-weight: 700; color: #ef4444; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; }
+    .quiz-section { background: linear-gradient(180deg, var(--bg-card), var(--bg-main)); padding: 3rem 0; border-top: 1px solid var(--glass-border); }
+    .quiz-section h2 { text-align: center; margin-bottom: 2rem; }
+    .flashcards-section { padding: 3rem 0; background: var(--bg-card); border-top: 1px solid var(--glass-border); }
+    .flashcards-section h2 { text-align: center; margin-bottom: 2rem; }
+    .dragdrop-section { padding: 3rem 0; background: linear-gradient(180deg, var(--bg-main), var(--bg-card)); border-top: 1px solid var(--glass-border); }
+    .dragdrop-section h2 { text-align: center; margin-bottom: 2rem; }
+    .complete-section { padding: 3rem 0; text-align: center; }
+    .complete-btn { padding: 1rem 2.5rem; font-size: 1.1rem; }
+    .chapter-footer-nav { display: flex; justify-content: space-between; align-items: center; padding: 2rem 0; border-top: 1px solid var(--glass-border); margin-top: 3rem; }
+    .chapter-footer-nav a { display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.5rem; background: var(--bg-card); border: 1px solid var(--glass-border); border-radius: var(--radius-md); color: var(--text-secondary); text-decoration: none; transition: var(--transition); }
+    .chapter-footer-nav a:hover { background: var(--cap-primary); color: white; border-color: var(--cap-primary); }
+    .footer { padding: 3rem 0; border-top: 1px solid var(--glass-border); text-align: center; }
+    .footer p { color: var(--text-muted); font-size: 0.9rem; }
+    @media (max-width: 768px) { .chapter-header { padding: 5rem 0 2rem; } .chapter-footer-nav { flex-direction: column; gap: 1rem; } .chapter-footer-nav a { width: 100%; justify-content: center; } }
+  </style>
+</head>
+<body>
+  <nav class="chapter-nav">
+    <a href="../index.html" class="chapter-nav-back"><span>←</span><span>Voltar ao Início</span></a>
+    <div class="chapter-nav-actions">
+      <button class="chapter-nav-btn" onclick="PainelPersonalizacao.abrir()">⚙️ Personalizar</button>
+      <button class="chapter-nav-btn" onclick="Progresso.concluirCapitulo(13); this.textContent='✅ Concluído'; this.disabled=true; Progresso.notificar('🎉 Capítulo 13 concluído! +100 XP');">✓ Marcar Concluído</button>
+    </div>
+  </nav>
+  <header class="chapter-header">
+    <div class="container chapter-header-content">
+      <div class="chapter-badge"><span>🔵</span><span>Capítulo 13</span></div>
+      <h1 class="chapter-title">CPU e Linguagem C</h1>
+      <p class="chapter-desc">🔵 CPU e Linguagem C — parte essencial da jornada para compreender o funcionamento interno do processador.</p>
+    </div>
+  </header>
+  <main class="chapter-content"><div class="container">
+<div class="content-section">
+  <h2>⚙️ Como o Compilador Funciona</h2>
+  <p>Quando você compila um programa em C, uma série de transformações acontecem. Cada etapa traduz seu código para algo mais próximo da máquina:</p>
+
+  <div class="diagram">
+    <div class="diagram-title">🔧 Etapas da Compilação</div>
+    <div style="display:flex;flex-direction:column;gap:0.75rem;max-width:550px;margin:0 auto">
+      <div class="diagram-box" style="width:100%;background:linear-gradient(135deg,#3b82f620,#1d4ed810);border-color:#3b82f640">
+        <strong>📝 Código Fonte (.c)</strong><br>
+        <small>int main() { printf("Hello"); }</small>
+      </div>
+      <span class="diagram-arrow">↓ Pré-processador (cpp)</span>
+      <div class="diagram-box" style="width:100%;background:linear-gradient(135deg,#a855f720,#7c3aed10);border-color:#a855f740">
+        <strong>📄 Código Expandido</strong><br>
+        <small>Headers incluídos, macros expandidas, comentários removidos</small>
+      </div>
+      <span class="diagram-arrow">↓ Compilador (gcc -S)</span>
+      <div class="diagram-box" style="width:100%;background:linear-gradient(135deg,#f9731620,#c2410c10);border-color:#f9731640">
+        <strong>🔧 Assembly (.s)</strong><br>
+        <small>mov eax, 1 | call printf | ret</small>
+      </div>
+      <span class="diagram-arrow">↓ Assembler (as)</span>
+      <div class="diagram-box" style="width:100%;background:linear-gradient(135deg,#22c55e20,#15803d10);border-color:#22c55e40">
+        <strong>💻 Código Objeto (.o)</strong><br>
+        <small>Código de máquina binário + tabela de símbolos</small>
+      </div>
+      <span class="diagram-arrow">↓ Linker (ld)</span>
+      <div class="diagram-box" style="width:100%;background:linear-gradient(135deg,#ef444420,#b91c1c10);border-color:#ef444440">
+        <strong>🚀 Executável</strong><br>
+        <small>Programa completo pronto para execução</small>
+      </div>
+    </div>
+  </div>
+
+  <pre><code>// Você pode ver cada etapa:
+$ gcc -E programa.c > programa.i    // Pré-processado
+$ gcc -S programa.c                 // Gera programa.s (Assembly)
+$ gcc -c programa.c                 // Gera programa.o (Objeto)
+$ gcc programa.c -o programa        // Executável completo
+
+// Ver o Assembly gerado:
+$ objdump -d programa | less
+// Ou:
+$ gcc -O0 -S programa.c && cat programa.s</code></pre>
+
+  <div class="info-box">
+    <div class="info-box-title">💡 Dica Prática</div>
+    <p>Use <code>gcc -O0</code> para compilar SEM otimizações — o Assembly gerado será mais fácil de entender e mapear para seu código C. Com <code>-O3</code>, o compilador reorganiza tudo para ser mais rápido, mas o Assembly fica confuso.</p>
+  </div>
+</div>
+
+<div class="content-section">
+  <h2>📦 Variáveis na CPU</h2>
+  <p>Cada tipo de variável em C tem uma representação diferente no nível da CPU:</p>
+
+  <pre><code>// Código C:
+int x = 42;           // 4 bytes (32 bits), complemento de 2
+char c = 'A';         // 1 byte, ASCII = 65
+float f = 3.14f;      // 4 bytes, padrão IEEE 754
+double d = 2.718;     // 8 bytes, ponto flutuante duplo
+int *ptr = &x;        // 8 bytes (64-bit), endereço de memória
+
+// Como a CPU vê isso (Assembly x86_64):
+// mov DWORD PTR [rbp-4], 42     // x = 42 (DWORD = 4 bytes)
+// mov BYTE PTR [rbp-5], 65      // c = 'A' (BYTE = 1 byte)
+// movss xmm0, [rip+.LC0]        // f = 3.14 (xmm = registrador FPU)
+// mov QWORD PTR [rbp-24], rax   // ptr = endereço (QWORD = 8 bytes)
+
+// Tamanhos em C:
+// sizeof(char)      = 1 byte
+// sizeof(short)     = 2 bytes
+// sizeof(int)       = 4 bytes
+// sizeof(long)      = 8 bytes (Linux 64-bit)
+// sizeof(long long) = 8 bytes
+// sizeof(float)     = 4 bytes
+// sizeof(double)    = 8 bytes
+// sizeof(void*)     = 8 bytes (64-bit)</code></pre>
+
+  <div class="diagram">
+    <div class="diagram-title">📊 Representação na Memória</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;max-width:600px;margin:0 auto;font-family:var(--font-mono);font-size:0.8rem">
+      <div style="background:var(--bg-elevated);padding:0.75rem;border-radius:8px">
+        <strong>int x = 42</strong><br>
+        <span style="color:var(--text-muted)">0x2A 0x00 0x00 0x00</span><br>
+        <small>(little-endian: byte menos significativo primeiro)</small>
+      </div>
+      <div style="background:var(--bg-elevated);padding:0.75rem;border-radius:8px">
+        <strong>char c = 'A'</strong><br>
+        <span style="color:var(--text-muted)">0x41</span><br>
+        <small>(ASCII 65 = 'A')</small>
+      </div>
+      <div style="background:var(--bg-elevated);padding:0.75rem;border-radius:8px">
+        <strong>float f = 3.14f</strong><br>
+        <span style="color:var(--text-muted)">0xC3 0xF5 0x48 0x40</span><br>
+        <small>(IEEE 754 single precision)</small>
+      </div>
+      <div style="background:var(--bg-elevated);padding:0.75rem;border-radius:8px">
+        <strong>int *ptr</strong><br>
+        <span style="color:var(--text-muted)">0x34 0x12 0x7F 0x00...</span><br>
+        <small>(8 bytes, endereço de memória)</small>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="content-section">
+  <h2>🔄 Loops na CPU</h2>
+  <p>Loops em C são traduzidos para saltos condicionais em Assembly:</p>
+
+  <pre><code>// C:
+for (int i = 0; i < 10; i++) {
+    printf("%d
+", i);
+}
+
+// Assembly x86_64 (simplificado):
+// mov DWORD PTR [rbp-4], 0    // i = 0
+// .L_loop:
+// cmp DWORD PTR [rbp-4], 10   // compara i com 10
+// jge .L_end                  // se i >= 10, pula para fim
+// 
+// // corpo do loop
+// mov eax, [rbp-4]            // eax = i
+// call printf                 // imprime
+// 
+// add DWORD PTR [rbp-4], 1    // i++
+// jmp .L_loop                 // volta para o início
+// .L_end:
+
+// O loop é implementado com:
+// - Inicialização (mov)
+// - Comparação (cmp)
+// - Salto condicional (jge = jump if greater or equal)
+// - Incremento (add)
+// - Salto incondicional (jmp)</code></pre>
+
+  <div class="curiosity-box">
+    <div class="curiosity-box-title">🤔 Curiosidade</div>
+    <p>O compilador pode "desenrolar" (unroll) loops automaticamente. Em vez de 10 iterações com saltos, ele pode gerar 10 instruções sequenciais — eliminando o overhead dos saltos e melhorando o uso do cache!</p>
+  </div>
+</div>
+
+<div class="content-section">
+  <h2>📞 Funções na CPU</h2>
+  <p>Chamadas de função envolvem a stack, registradores e convenções de chamada:</p>
+
+  <pre><code>// C:
+int soma(int a, int b) {
+    return a + b;
+}
+
+int main() {
+    int resultado = soma(10, 20);
+    return 0;
+}
+
+// Assembly x86_64 (System V AMD64 ABI - Linux):
+// main:
+//   mov edi, 10          // 1º argumento em EDI (a)
+//   mov esi, 20          // 2º argumento em ESI (b)
+//   call soma            // chama função (push RIP, jump)
+//   mov [rbp-4], eax     // resultado = valor retornado em EAX
+//   mov eax, 0           // return 0
+//   ret
+//
+// soma:
+//   push rbp             // salva frame anterior
+//   mov rbp, rsp         // novo frame
+//   mov eax, edi         // eax = a (1º arg)
+//   add eax, esi         // eax += b (2º arg)
+//   pop rbp              // restaura frame
+//   ret                  // retorna (eax = resultado)
+
+// Convenção de chamada Linux x86_64:
+// Argumentos inteiros: RDI, RSI, RDX, RCX, R8, R9
+// Retorno: RAX
+// Preservados pelo chamado: RBX, RBP, R12-R15
+// Voláteis: RAX, RCX, RDX, RSI, RDI, R8-R11</code></pre>
+
+  <div class="info-box">
+    <div class="info-box-title">💡 Convenção de Chamada</div>
+    <p>A "convenção de chamada" define COMO passar argumentos, QUEM limpa a stack, e ONDE colocar o retorno. Diferentes sistemas operacionais e arquiteturas têm convenções diferentes! Linux x86_64 usa a ABI System V, enquanto Windows usa a convenção Microsoft x64.</p>
+  </div>
+</div>
+
+<div class="content-section">
+  <h2>🔗 Ponteiros na CPU</h2>
+  <p>Ponteiros são endereços de memória. A CPU os trata como números inteiros, mas com semântica especial:</p>
+
+  <pre><code>// C:
+int x = 42;
+int *ptr = &x;
+int valor = *ptr;     // dereference: lê valor no endereço
+ptr++;                // aritmética de ponteiros
+
+// Assembly:
+// lea rax, [rbp-4]         // rax = &x (endereço de x)
+// mov QWORD PTR [rbp-16], rax  // ptr = rax
+// mov rax, [rbp-16]        // rax = ptr (endereço)
+// mov eax, [rax]           // eax = *ptr (valor no endereço)
+// mov [rbp-20], eax        // valor = eax
+//
+// ptr++:
+// mov rax, [rbp-16]        // rax = ptr
+// add rax, 4               // rax += 4 (sizeof(int))
+// mov [rbp-16], rax        // ptr = rax
+
+// Aritmética de ponteiros:
+// ptr + 1  →  endereço + sizeof(tipo)
+// int*  + 1 = +4 bytes
+// char* + 1 = +1 byte
+// double* + 1 = +8 bytes</code></pre>
+
+  <div class="warning-box">
+    <div class="warning-box-title">⚠️ Segmentation Fault</div>
+    <p>Quando você dereferencia um ponteiro inválido (NULL, endereço não mapeado), a CPU gera uma <strong>exceção</strong> que o kernel captura e mata seu programa com "Segmentation fault". É o kernel protegendo a memória!</p>
+  </div>
+</div>
+
+<div class="content-section">
+  <h2>🗺️ Resumo Visual</h2>
+  <div class="diagram">
+    <div class="diagram-title">🧩 Mapa Mental — CPU e Linguagem C</div>
+    <div class="diagram-row">
+      <div class="diagram-box" style="min-width:180px">
+        <strong>⚙️ Compilação</strong><br>
+        <small style="color:var(--text-muted)">
+        ├─ .c → .i → .s → .o → exec<br>
+        ├─ Pré-processador<br>
+        ├─ Compilador<br>
+        ├─ Assembler<br>
+        └─ Linker
+        </small>
+      </div>
+      <div class="diagram-box" style="min-width:180px">
+        <strong>📦 Variáveis</strong><br>
+        <small style="color:var(--text-muted)">
+        ├─ char: 1 byte<br>
+        ├─ int: 4 bytes<br>
+        ├─ float: 4 bytes<br>
+        ├─ double: 8 bytes<br>
+        └─ pointer: 8 bytes
+        </small>
+      </div>
+      <div class="diagram-box" style="min-width:180px">
+        <strong>📞 Funções</strong><br>
+        <small style="color:var(--text-muted)">
+        ├─ Args: RDI, RSI, RDX...<br>
+        ├─ Retorno: RAX<br>
+        ├─ Stack frame<br>
+        └─ call/ret
+        </small>
+      </div>
+    </div>
+  </div>
+</div>
+</div></main>
+  <section class="quiz-section" id="quiz"><div class="container"><h2>🧠 Quiz do Capítulo 13</h2><div id="quiz-container"></div></div></section>
+  <section class="flashcards-section" id="flashcards"><div class="container"><h2>🎴 Flashcards</h2><div id="flashcards-container"></div></div></section>
+  <section class="dragdrop-section" id="dragdrop"><div class="container"><h2>🎯 Desafio: Arraste e Solte</h2><div id="dragdrop-container"></div></div></section>
+  <section class="complete-section"><div class="container"><h2>🎉 Parabéns por chegar até aqui!</h2><p class="mb-3">Você completou o conteúdo do Capítulo 13. Não se esqueça de marcar como concluído!</p><button class="btn btn-primary complete-btn" onclick="Progresso.concluirCapitulo(13); Progresso.notificar('🎉 Capítulo 13 concluído! +100 XP'); this.textContent='✅ Concluído'; this.disabled=true;">✓ Marcar Capítulo 13 como Concluído</button></div></section>
+  <div class="container"><div class="chapter-footer-nav"><a href="cap12.html">← Capítulo Anterior</a><a href="cap14.html">Próximo Capítulo →</a></div></div>
+  <footer class="footer"><div class="container"><p>Processador Desmistificado &copy; 2026</p></div></footer>
+  <script src="../js/main.js"></script>
+  <script>
+    const quizPerguntas = [
+  {
+    pergunta: "Qual a primeira etapa da compilação?",
+    opcoes: ["Assembler", "Linker", "Pré-processador", "Compilador"],
+    correta: 2
+  },
+  {
+    pergunta: "Qual registrador recebe o 1º argumento inteiro em Linux x86_64?",
+    opcoes: ["RAX", "RDI", "RSI", "RDX"],
+    correta: 1
+  },
+  {
+    pergunta: "Qual registrador armazena o valor de retorno de uma função?",
+    opcoes: ["RDI", "RAX", "RSP", "RBP"],
+    correta: 1
+  },
+  {
+    pergunta: "O que acontece quando dereferencia um ponteiro NULL?",
+    opcoes: ["Retorna 0", "Segmentation fault", "Cria um novo ponteiro", "Nada acontece"],
+    correta: 1
+  },
+  {
+    pergunta: "Qual o tamanho de um ponteiro em sistema 64-bit?",
+    opcoes: ["4 bytes", "8 bytes", "2 bytes", "Depende do tipo"],
+    correta: 1
+  }
+];
+    Quiz.criar('quiz-container', quizPerguntas, 13);
+
+    const flashcardsData = [
+  { frente: "Quais são as 4 etapas da compilação em C?", verso: "1) Pré-processador (cpp), 2) Compilador (gcc), 3) Assembler (as), 4) Linker (ld)." },
+  { frente: "Qual registrador recebe o 1º argumento em Linux x86_64?", verso: "RDI — seguido por RSI, RDX, RCX, R8, R9 para argumentos inteiros." },
+  { frente: "Onde fica o valor de retorno de uma função?", verso: "No registrador RAX (ou RDX:RAX para valores de 128 bits)." },
+  { frente: "O que é aritmética de ponteiros?", verso: "Quando somamos a um ponteiro, o compilador multiplica pelo sizeof do tipo. ptr+1 em int* = +4 bytes." },
+  { frente: "O que causa Segmentation Fault?", verso: "Dereferenciar um ponteiro inválido (NULL, não mapeado). A CPU gera exceção e o kernel mata o processo." }
+];
+    Flashcards.criar('flashcards-container', flashcardsData);
+
+    const dragdropData = [
+  { alvo: "1ª etapa: headers e macros", item: "Pré-processador" },
+  { alvo: "2ª etapa: C → Assembly", item: "Compilador" },
+  { alvo: "3ª etapa: Assembly → binário", item: "Assembler" },
+  { alvo: "4ª etapa: liga objetos", item: "Linker" },
+  { alvo: "1º argumento inteiro", item: "RDI" },
+  { alvo: "Valor de retorno", item: "RAX" }
+];
+    DragDrop.criar('dragdrop-container', dragdropData, 13);
+</script>
+</body>
+</html>
